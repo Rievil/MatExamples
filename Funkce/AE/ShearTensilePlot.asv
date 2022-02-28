@@ -85,7 +85,7 @@ r
         function CalculateLine(obj,type)
             switch type
                 case 'cetris_b'
-                    obj.Alpha=130;
+                    obj.Alpha=40;
                 case 'cetris'
                     obj.Alpha=40;
                 case 'concrete'

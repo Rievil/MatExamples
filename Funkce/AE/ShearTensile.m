@@ -153,6 +153,7 @@ classdef ShearTensile < handle
             
 %             if obj.LineSet==false && obj.ParentSet==true
 %             [x,y]=obj.Parent.GetLine(max(obj.RAVal));
+            GenerateLine(obj.Parent);
             SetLine(obj,obj.Parent.XLine,obj.Parent.YLine);
 %             end
             
