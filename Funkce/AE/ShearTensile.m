@@ -22,6 +22,7 @@ classdef ShearTensile < handle
         Cloud;
         Centers;
         AlphaCh=false;
+        CloudAlpha=1;
     end
     
     properties
@@ -109,23 +110,38 @@ classdef ShearTensile < handle
         end
         
         function SetColorCenter(obj,tcol,scol)
-            obj.Centers{1}.MarkerFaceColor=tcol;
-            obj.Centers{2}.MarkerFaceColor=scol;
+%             obj.Centers{1}.MarkerFaceColor=tcol;
+%             obj.Centers{2}.MarkerFaceColor=scol;
         end
         
         function SetColorCloud(obj,tcol,scol)
-            obj.Cloud{1}.MarkerFaceColor=tcol;
-            obj.Cloud{2}.MarkerFaceColor=scol;
+%             obj.Cloud{1}.MarkerFaceColor=tcol;
+%             obj.Cloud{2}.MarkerFaceColor=scol;
         end
         
         function SetColor(obj,tcol,scol)
-                SetColorCenter(obj,tcol,scol);
-                SetColorCloud(obj,tcol,scol);
+%                 SetColorCenter(obj,tcol,scol);
+%                 SetColorCloud(obj,tcol,scol);
         end
         
+        function SetGUIParams(obj,varargin)
+
+            while numel(varargin)>0
+                switch lower(varargin{1})
+                    case 'alpha'
+                        obj.CloudAlpha=varargin{2};
+                    otherwise
+
+                end
+                varargin(1:2)=[];
+            end
+        end
+
         function PlotCloud(obj)
-            obj.Cloud{1}=scatter(obj.Ax,obj.RAVal(obj.Idx),obj.AvgFreq(obj.Idx),'o','filled','HandleVisibility','off');
-            obj.Cloud{2}=scatter(obj.Ax,obj.RAVal(~obj.Idx),obj.AvgFreq(~obj.Idx),'o','filled','HandleVisibility','off');
+            obj.Cloud{1}=scatter(obj.Ax,obj.RAVal(obj.Idx),obj.AvgFreq(obj.Idx),'o','filled','HandleVisibility','off',...
+                'MarkerFaceAlpha',obj.CloudAlpha,'MarkerEdgeAlpha',obj.CloudAlpha);
+            obj.Cloud{2}=scatter(obj.Ax,obj.RAVal(~obj.Idx),obj.AvgFreq(~obj.Idx),'o','filled','HandleVisibility','off',...
+                'MarkerFaceAlpha',obj.CloudAlpha,'MarkerEdgeAlpha',obj.CloudAlpha);
             
             if obj.WSet
                 obj.Cloud{1}.SizeData =obj.Weight(obj.Idx);

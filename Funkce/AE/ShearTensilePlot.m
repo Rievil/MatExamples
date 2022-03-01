@@ -46,8 +46,6 @@ classdef ShearTensilePlot < handle
             end
             
         end
-%         
-r
 
         function AddSet(obj,set)
             set.SetParent(obj);
@@ -93,7 +91,6 @@ r
             end
             obj.Beta=0;
             obj.LineFunction=@(x) x*obj.Alpha+obj.Beta;
-                        
         end
         
         function RemoveSet(obj,idx)
@@ -168,11 +165,15 @@ r
             end
             
             tcol=lines(obj.Count);
+%             tcol(:,4)=0.5;
             scol=tcol;
             
             for i=1:obj.Count
+                SetGUIParams(obj.DataSets(i),'Alpha',0.2);
                 
                 plot(obj.DataSets(i),type);
+                
+
                 switch type
                     case 'cloud'
                         SetColorCloud(obj.DataSets(i),tcol(i,:),scol(i,:));
@@ -189,22 +190,28 @@ r
                     obj.GetLimits('cloud');
                 case 'centers'
                     obj.GetLimits('center');
+                    
                 case 'both'
                     obj.GetLimits('cloud');
             end
-            
-            
-            for i=1:obj.Count
-                uistack(obj.DataSets(i).Centers{1},'top' );
-                uistack(obj.DataSets(i).Centers{2},'top' );
+
+            if ~strcmp(type,'cloud')
+                for i=1:obj.Count
+                    uistack(obj.DataSets(i).Centers{1},'top' );
+                    uistack(obj.DataSets(i).Centers{2},'top' );
+                end
             end
             
             
+
+            
+            
             set(obj.Ax,'XScale','log');
-%             set(obj.Ax,'YScale','log');
             
             DrawAnnotation(obj);
             
+            xlim(obj.Ax,obj.XLim);
+            ylim(obj.Ax,obj.YLim);
             
         end
         
@@ -320,7 +327,6 @@ r
             else
                 obj.YLim=[0,obj.MaxYLim];
             end
-%             obj.XLim
         end
         
         
@@ -352,6 +358,9 @@ r
             ar=area(x,y,'FaceAlpha',0.2,'FaceColor',[0.6 0.6 .6],'HandleVisibility','off','EdgeColor','non');
             uistack(ar,'bottom');
             
+
+
+
             for i=1:numel(tx)
                 STR={'$\leftarrow Tensile crack$','$Shear crack \rightarrow$'};
                 switch i
