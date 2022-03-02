@@ -80,7 +80,7 @@ classdef ShearTensilePlot < handle
             y=x.*obj.Alpha;
         end
         
-        function CalculateLine(obj,type)
+        function CalculateLine(obj,type,varargin)
             switch type
                 case 'cetris_b'
                     obj.Alpha=130;
@@ -90,6 +90,8 @@ classdef ShearTensilePlot < handle
                     obj.Alpha=40;
                 case '3DPrintedContrete'
                     obj.Alpha=260;
+                case 'custom'
+                    obj.Alpha=varargin{1};
             end
             obj.Beta=0;
             obj.LineFunction=@(x) x*obj.Alpha+obj.Beta;
