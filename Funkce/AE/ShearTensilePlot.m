@@ -20,12 +20,14 @@ classdef ShearTensilePlot < handle
         Beta;
         MaxXLim=0;
         MaxYLim=0;
+        Latex=false;
     end
     
     properties (Dependent)
         Count;
     end
     
+
     methods
         function obj = ShearTensilePlot(~)
         end
@@ -50,7 +52,6 @@ classdef ShearTensilePlot < handle
         function AddSet(obj,set)
             set.SetParent(obj);
             obj.DataSets(obj.Count+1)=set;
-%             set.Run;
         end
         
         function SetAx(obj,ax)
@@ -119,8 +120,6 @@ classdef ShearTensilePlot < handle
         end
         
         function SetLim(obj)
-%             xlimTmp=[inf,0];
-%             ylimTmp=[inf,0];
             for i=1:obj.Count
                 [xlim,ylim]=GetLim(obj.DataSets(i));
                 
@@ -161,26 +160,64 @@ classdef ShearTensilePlot < handle
             end
         end
         
-        function plot(obj,type)
+        function plot(obj,varargin)
             if obj.AxSet==false
-%                 SetFig(obj);
+                SetFig(obj);
             end
-            
-            obj.Ax=gca;
+
+            colset=false;
+            seltype=false;
+
+            while numel(varargin)>0
+                switch lower(varargin{1})
+                    case 'alpha'
+                        alpha=true;
+                        alphaval=varargin{2};
+                    case 'colortype'
+                        switch lower(varargin{2})
+                            case 'basic'
+                                tcol=lines(obj.Count);
+                                scol=tcol;
+                            case 'bicolor'
+                                scol=zeros(obj.Count,3);
+                                scol(:,1)=linspace(1,0.3,obj.Count);
+                                scol(:,2)=0.3;
+                                scol(:,3)=linspace(1,0.7,obj.Count);
+                                
+                                tcol=zeros(obj.Count,3);
+                                tcol(:,1)=0;
+                                tcol(:,2)=linspace(1,0.3,obj.Count);
+                                tcol(:,3)=linspace(1,0.7,obj.Count);
+                        end
+                        colset=true;
+                    case 'type'
+                        seltype=true;
+                        type=varargin{2};
+                end
+                varargin(1:2)=[];
+            end
             
             rcol=linspace(0.5,1,obj.Count);
             
             GenerateLine(obj);
             
-            tcol=lines(obj.Count);
-%             tcol(:,4)=0.5;
-            scol=tcol;
-            
+            if ~colset
+                tcol=lines(obj.Count);
+                scol=tcol;
+            end
+
+            if ~alpha
+                alphaval=0.2;
+            end
+
+            if ~seltype
+                type='both';
+            end
+
             for i=1:obj.Count
-                SetGUIParams(obj.DataSets(i),'Alpha',0.2);
+                SetGUIParams(obj.DataSets(i),'Alpha',alphaval);
                 
                 plot(obj.DataSets(i),type);
-                
 
                 switch type
                     case 'cloud'
@@ -198,7 +235,6 @@ classdef ShearTensilePlot < handle
                     obj.GetLimits('cloud');
                 case 'centers'
                     obj.GetLimits('center');
-                    
                 case 'both'
                     obj.GetLimits('cloud');
             end
@@ -209,12 +245,9 @@ classdef ShearTensilePlot < handle
                     uistack(obj.DataSets(i).Centers{2},'top' );
                 end
             end
-            
-            
 
-            
-            
             set(obj.Ax,'XScale','log');
+            set(obj.Ax,'YScale','log');
             
             DrawAnnotation(obj);
             
@@ -223,8 +256,8 @@ classdef ShearTensilePlot < handle
             
         end
         
-        function ShowLegend(obj)
-            lgd=legend('location','southoutside','Orientation','horizontal');
+        function ShowLegend(obj,varargin)
+            lgd=legend(varargin{:});
             lgd.FontSize=8;
             lgd.NumColumns=2;
             lgd.EdgeColor='none';
@@ -325,7 +358,7 @@ classdef ShearTensilePlot < handle
             end
             
             if obj.MaxXLim==0
-                obj.XLim=[min([xsmin,xtmin])*0.5,max([xsmax,xtmax])*1.5];
+                obj.XLim=[0,max([xsmax,xtmax])*1.5];
             else
                 obj.XLim=[0,obj.MaxXLim];
             end
@@ -341,8 +374,7 @@ classdef ShearTensilePlot < handle
         function DrawAnnotation(obj)
             ax=obj.Ax;
             obj.Red=[0.70 0.80];
-            
-%             [x,y]=GetLine(obj,obj.XLim(2));
+
             plot(obj.Ax,obj.XLine,obj.YLine,'-k','HandleVisibility','off');
             
             tx(1)=text(ax,[.05],[.1],'Intermediate damage','Units','normalized','FontName','Palatino linotype');
@@ -350,8 +382,7 @@ classdef ShearTensilePlot < handle
             tx(3)=text(ax,[.95],[.1],'Low damage','Units','normalized','HorizontalAlignment','right','FontName','Palatino linotype');
             tx(4)=text(ax,[.95],[.95],'Intermediate damage','Units','normalized','HorizontalAlignment','right','FontName','Palatino linotype');
             
-%             xlabel('Rise angle [ms/V]');
-%             ylabel('Average frequency [Hz]');
+
             
             idx=find(obj.YLine>(obj.YLim(2)-obj.YLim(1))*2/3,1,'first');
             STR={'\leftarrow Tensile crack','Shear crack \rightarrow'};
@@ -366,19 +397,20 @@ classdef ShearTensilePlot < handle
             ar=area(x,y,'FaceAlpha',0.2,'FaceColor',[0.6 0.6 .6],'HandleVisibility','off','EdgeColor','non');
             uistack(ar,'bottom');
             
-
-
-
-            for i=1:numel(tx)
-                STR={'$\leftarrow Tensile crack$','$Shear crack \rightarrow$'};
-                switch i
-                    case 5
-                        
-                        set(tx(i),'interpreter','latex','FontName','cmr12','String',STR{1});
-                    case 6
-                        set(tx(i),'interpreter','latex','FontName','cmr12','String',STR{2});
-                    otherwise
-                        set(tx(i),'interpreter','latex','FontName','cmr12');
+            xlabel(ax,'Rise angle [s/V]','FontName','Palatino linotype');
+            ylabel(ax,'Average freqeuncy [Hz]','FontName','Palatino linotype');
+            
+            if obj.Latex
+                for i=1:numel(tx)
+                    STR={'$\leftarrow Tensile crack$','$Shear crack \rightarrow$'};
+                    switch i
+                        case 5
+                            set(tx(i),'interpreter','latex','FontName','cmr12','String',STR{1});
+                        case 6
+                            set(tx(i),'interpreter','latex','FontName','cmr12','String',STR{2});
+                        otherwise
+                            set(tx(i),'interpreter','latex','FontName','cmr12');
+                    end
                 end
             end
         end

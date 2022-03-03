@@ -110,18 +110,18 @@ classdef ShearTensile < handle
         end
         
         function SetColorCenter(obj,tcol,scol)
-%             obj.Centers{1}.MarkerFaceColor=tcol;
-%             obj.Centers{2}.MarkerFaceColor=scol;
+            obj.Centers{1}.MarkerFaceColor=tcol;
+            obj.Centers{2}.MarkerFaceColor=scol;
         end
         
         function SetColorCloud(obj,tcol,scol)
-%             obj.Cloud{1}.MarkerFaceColor=tcol;
-%             obj.Cloud{2}.MarkerFaceColor=scol;
+            obj.Cloud{1}.MarkerFaceColor=tcol;
+            obj.Cloud{2}.MarkerFaceColor=scol;
         end
         
         function SetColor(obj,tcol,scol)
-%                 SetColorCenter(obj,tcol,scol);
-%                 SetColorCloud(obj,tcol,scol);
+                SetColorCenter(obj,tcol,scol);
+                SetColorCloud(obj,tcol,scol);
         end
         
         function SetGUIParams(obj,varargin)
@@ -129,7 +129,10 @@ classdef ShearTensile < handle
             while numel(varargin)>0
                 switch lower(varargin{1})
                     case 'alpha'
+                        obj.AlphaCh=true;
                         obj.CloudAlpha=varargin{2};
+                    case 'colortype'
+                        
                     otherwise
 
                 end
