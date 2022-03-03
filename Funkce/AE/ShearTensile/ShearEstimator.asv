@@ -1,0 +1,33 @@
+classdef ShearEstimator < handle    %UNTITLED Summary of this class goes here
+    %   Detailed explanation goes here
+
+    properties
+        Parent;
+        RAVal;
+        AvgFreqVal;
+        Loc;
+        MidleType;
+        Alpha;
+        Beta;
+    end
+
+    methods
+        function obj = ShearEstimator(parent)
+            obj.Parent=parent;
+            
+        end
+
+        function SetValues(obj,raval,avgfreqval,loc)
+            obj.RAVal=raval;
+            obj.AvgFreqVal=avgfreqval;
+            obj.Loc=loc;
+            
+        end
+
+        function outputArg = method1(obj,inputArg)
+            %METHOD1 Summary of this method goes here
+            %   Detailed explanation goes here
+            outputArg = obj.Property1 + inputArg;
+        end
+    end
+end

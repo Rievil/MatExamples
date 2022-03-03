@@ -62,8 +62,8 @@ classdef ShearTensilePlot < handle
             obj.AxSet=true;
             
             if obj.CloseCallBackSet==false
-                obj.Fig.CloseRequestFcn=@obj.CloseFigure;
-                obj.CloseCallBackSet=true;
+%                 obj.Fig.CloseRequestFcn=@obj.CloseFigure;
+%                 obj.CloseCallBackSet=true;
             end
         end
         
@@ -77,14 +77,14 @@ classdef ShearTensilePlot < handle
         end
         
         function [x,y]=GetLine(obj)
-            x=linspace(1e-3,obj.XLim(2),10e+3);
+            x=linspace(obj.XLim(1),obj.XLim(2),10e+3);
             y=x.*obj.Alpha;
         end
         
         function CalculateLine(obj,type,varargin)
             switch type
                 case 'cetris_b'
-                    obj.Alpha=538;
+                    obj.Alpha=130;
                 case 'cetris'
                     obj.Alpha=40;
                 case 'concrete'
@@ -364,9 +364,9 @@ classdef ShearTensilePlot < handle
             end
             
             if obj.MaxYLim==0
-                obj.YLim=[ysmin*0.9,max([ysmax,ytmax])*1.1];
+                obj.YLim=[0,max([ysmax,ytmax])*1.1];
             else
-                obj.YLim=[ysmin*0.9,obj.MaxYLim];
+                obj.YLim=[0,obj.MaxYLim];
             end
         end
         
@@ -384,7 +384,7 @@ classdef ShearTensilePlot < handle
             
 
             
-            idx=find(obj.YLine>(obj.YLim(2)-obj.YLim(1))*1/3,1,'first');
+            idx=find(obj.YLine>(obj.YLim(2)-obj.YLim(1))*2/3,1,'first');
             STR={'\leftarrow Tensile crack','Shear crack \rightarrow'};
             tx(5)=text(ax,obj.XLine(idx)*obj.Red(1),obj.YLine(idx)*obj.Red(2),STR{1},'HorizontalAlignment','right','FontSize',8,...
                 'FontName','Palatino linotype','FontWeight','bold');

@@ -23,7 +23,7 @@ data=startForeground(s);
 dq = daq("ni");
 dq.Rate = 100000;
 addinput(dq, "NICard", "ai0", "Voltage");
-addinput(dq, "NICard", "ai2", "Voltage");
+
 %%
 tabledata = read(dq,seconds(1));
 %%
@@ -31,9 +31,10 @@ tabledata = read(dq,seconds(1));
 noth=y;
 %%
 tabledata = read(dq,seconds(2));
+%
 x=tabledata.Time;
-y=tabledata.NICard_ai0-noth;
-yi=tabledata.NICard_ai2;
+y=tabledata.NICard_ai0;
+
 %
 figure;
 hold on;
