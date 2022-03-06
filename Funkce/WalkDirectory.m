@@ -17,8 +17,5 @@ function out=WalkDirectory(folder)
         targetfolder=[char(folders.folder(i)) '\' char(folders.name(i))];
         out=[out; WalkDirectory(targetfolder)];
     end
-
-
     
-
 end
