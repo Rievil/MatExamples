@@ -4,6 +4,7 @@ classdef ShearTensilePlot < handle
     
     properties
         DataSets ShearTensile;
+        STEstimator;
         XLine;
         YLine;
         LineFunction;
@@ -30,6 +31,7 @@ classdef ShearTensilePlot < handle
 
     methods
         function obj = ShearTensilePlot(~)
+            obj.STEstimator=ShearEstimator(obj);
         end
         
         function UpdateSet(obj,set,id)
