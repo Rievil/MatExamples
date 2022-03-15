@@ -47,6 +47,12 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
                         case 'median'
                             name='Median';
                             arr = median(B{:,valcols(k)});
+                        case 'max'
+                            name='Max';
+                            arr = max(B{:,valcols(k)});
+                        case 'min'
+                            name='Min';
+                            arr = min(B{:,valcols(k)});
                     end
                     newname=sprintf('%s%s',name,varnames{valcols(k)});
                     ssT=table(arr,'VariableNames',{newname});
