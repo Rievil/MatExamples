@@ -322,13 +322,14 @@ classdef ExSignal < handle
                         out.(sprintf("FreqAmp%d",i))=NaN;
                         out.(sprintf("FreqWidth%d",i))=NaN;
                     end
-                    
-                    out.HarmRat=0;
+
                     
                     if i<=size(Tff,1)
                         if i>1
-                            out.HarmRat=out.HarmRat+Tff.Amp(i-1)/Tff.Amp(i);
+                            out.(sprintf("HarmRat%d",i-1))=Tff.Amp(i-1)/Tff.Amp(i);
                         end
+                    else
+                        out.(sprintf("HarmRat%d",i-1))=NaN;
                     end
                     
                 end
