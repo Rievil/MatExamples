@@ -1,8 +1,16 @@
 function imgs=SplitImage(img,tarcount)
     Xs=size(img,2);
     Ys=size(img,1);
+    
+    for i=0:10
+        expon=2^i;
+        if expon>tarcount
+            tarcountfin=expon;
+            break;
+        end
+    end
 
-    switch tarcount
+    switch tarcountfin
         case 1
             dx=1;
             dy=1;
@@ -29,13 +37,12 @@ function imgs=SplitImage(img,tarcount)
     Ysi=int32(Ys/dy);
 
     n=0;
-    img2=cell(tarcount);
+    imgs=cell(tarcount,1);
     for i=1:dx
         for j=1:dy
             n=n+1;
             dim=[Xsi*(i-1),Ysi*(j-1),Xsi,Ysi];
-            nexttile;
-            img2{n}=imcrop(img,dim);
+            imgs{n}=imcrop(img,dim);
 %             imshow(img2);
         end
     end
