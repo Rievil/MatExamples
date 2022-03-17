@@ -27,6 +27,18 @@ classdef ExSignal < handle
         SpectrumFeatures struct;
         FreqPeaks=1;
         Option struct;
+        SigAx;
+        SpecAx;
+        Fig;
+    end
+
+    properties (Hidden)
+        FigSet=false;
+        PlotSignals=true;
+        PlotSpectrum=false;
+        SigAxSet=false;
+        SpecAxSet=false;
+        SetAnnotate=false;
     end
 
     methods
@@ -99,22 +111,104 @@ classdef ExSignal < handle
             freq(:,1)=linspace(0,obj.SamplingFreq/2,obj.FNSamples)';
         end
 
-        function plot(obj)
-            figure;
+        function plot(obj,varargin)
+            
+            while numel(varargin)>0
+                switch lower(varargin{1})
+                    case 'plotsignal'
+                        switch varargin{2}
+                            case true
+                                obj.PlotSignals=varargin{2};
+                            case false
+                                obj.PlotSignals=varargin{2};
+                        end
+                    case 'plotspectrum'
+                        switch varargin{2}
+                            case true
+                                obj.PlotSpectrum=varargin{2};
+                            case false
+                                obj.PlotSpectrum=varargin{2};
+                        end
+                    case 'figure'
+                        obj.Fig=varargin{2};
+                        obj.FigSet=true;
+                        clrf(obj.Fig);
+                    case 'signalax'
+                        obj.SigAx=varargin{2};
+                        obj.SigAxSet=true;
+                        obj.PlotSignals=true;
+                        cla(obj.SigAx);
+                    case 'spectrumax'
+                        obj.SpecAx=varargin{2};
+                        obj.PlotSpectrum=true;
+                        obj.SpecAxSet=true;
+                        cla(obj.SpecAx);
+                    case 'annotate'
+%                         obj.SetAnnotate=true;
+                        switch varargin{2}
+                            case true
+                                obj.SetAnnotate=varargin{2};
+                            case false
+                                obj.SetAnnotate=varargin{2};
+                        end
+                end
+                varargin(1:2)=[];
+            end
+            
+            if ~obj.FigSet
+                if obj.SigAxSet || obj.SpecAxSet
+                    if obj.SigAxSet
+                        obj.Fig=obj.SigAx.Parent;
+                    else
+                        obj.Fig=obj.SpecAx.Parent;
+                    end
+                else
+                    obj.Fig=figure;
+                end
+            end
+            
+
             if obj.HasSignal==true
-                ax1=subplot(1,2,1);
-                hold on;
-
-                PlotSignalFeatures(obj,ax1);
-                
-                ax2=subplot(1,2,2);
-                hold on;
-
-                PlotSpectrumFeatures(obj,ax2);
+                if obj.PlotSignals && obj.PlotSpectrum
+                    if ~obj.SigAxSet
+                        obj.SigAx=subplot(1,2,1);
+                    end
+                    hold(obj.SigAx,'on');
+                    
+                    
+                    if ~obj.SpecAxSet
+                        obj.SpecAx=subplot(1,2,2);
+                    end
+                    hold(obj.SpecAx,'on');
+                    
+                    PlotSignalFeatures(obj,obj.SigAx);
+                    PlotSpectrumFeatures(obj,obj.SpecAx);
+                else
+                    if obj.PlotSignals
+                        if ~obj.SigAxSet
+                            obj.SigAx=axis(obj.Fig);
+                        end
+                        hold(obj.SigAx,'on');
+                        PlotSignalFeatures(obj,obj.SigAx);
+                    end
+                    
+                    if obj.PlotSpectrum
+                        if ~obj.SpecAxSet
+                            obj.SpecAx=subplot(1,2,2);
+                        end
+                        hold(obj.SpecAx,'on');
+                        PlotSpectrumFeatures(obj,obj.SpecAx);
+                    end
+                end
 
             else
-                ax=gca;
-                PlotSpectrumFeatures(obj,ax);
+                if obj.PlotSpectrum
+                    if ~obj.SpecAxSet
+                        obj.SpecAx=subplot(1,2,2);
+                    end
+                    hold(obj.SpecAx,'on');
+                    PlotSpectrumFeatures(obj,obj.SpecAx);
+                end
             end
         end
 
@@ -127,14 +221,15 @@ classdef ExSignal < handle
             time=obj.Time;
             
             pidx=obj.Option.PartSignalIDX{1}:1:obj.Option.PartSignalIDX{2};
-            plot(ax,time,obj.Signal);
-            plot(ax,time(pidx),obj.Signal(pidx),':r');
+            plot(ax,time,obj.Signal,'DisplayName','Signal');
+
+            plot(ax,time(pidx),obj.Signal(pidx),'-','LineWidth',1.1,'DisplayName','Signal above treashold');
             plot(ax,[time(1) time(end)],[obj.SignalFeatures.Trsh, obj.SignalFeatures.Trsh],...
-                '-','Color',[.6 .6 .6]);
+                '-','Color',[.6 .6 .6],'DisplayName',sprintf("Treashold %0.0f%% of noise",obj.NoiseMultiplier*100));
             
-            plot(ax,obj.Option.XRise,obj.Option.YRise,'-r');
-            plot(ax,obj.Option.XDown,obj.Option.YDown,'-y');
-            scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,'^k','filled');
+            plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
+            plot(ax,obj.Option.XDown,obj.Option.YDown,'--r','HandleVisibility','off');
+            scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,'^k','filled','DisplayName','AE Hits');
             
             if obj.SignalAtt
                 newx=linspace(min(obj.Option.Peaks.Time),max(obj.Option.Peaks.Time),10)';
@@ -142,6 +237,12 @@ classdef ExSignal < handle
                 plot(ax,newx,newy,'-r');
                 
             end
+            
+            if obj.SetAnnotate
+                lgd=legend('location','southeast','FontSize',8);
+                lgd.EdgeColor='none';
+            end
+
         end
 
         function PlotSpectrumFeatures(obj,ax)

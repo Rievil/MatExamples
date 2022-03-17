@@ -178,8 +178,8 @@ classdef ShearTensilePlot < handle
                     case 'colortype'
                         switch lower(varargin{2})
                             case 'basic'
-                                tcol=lines(obj.Count);
-                                scol=tcol;
+                                tcol=winter(obj.Count);
+                                scol=spring(obj.Count);
                             case 'bicolor'
                                 scol=zeros(obj.Count,3);
                                 scol(:,1)=linspace(1,0.3,obj.Count);
@@ -386,7 +386,10 @@ classdef ShearTensilePlot < handle
             
 
             
-            idx=find(obj.YLine>(obj.YLim(2)-obj.YLim(1))*1/3,1,'first');
+            idx=find(obj.YLine>=(obj.YLim(2)-obj.YLim(1))*1/5,1,'first');
+            if isempty(idx)
+                idx=int32(numel(obj.XLine)/2);
+            end
             STR={'\leftarrow Tensile crack','Shear crack \rightarrow'};
             tx(5)=text(ax,obj.XLine(idx)*obj.Red(1),obj.YLine(idx)*obj.Red(2),STR{1},'HorizontalAlignment','right','FontSize',8,...
                 'FontName','Palatino linotype','FontWeight','bold');
