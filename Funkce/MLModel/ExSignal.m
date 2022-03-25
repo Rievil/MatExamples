@@ -23,6 +23,7 @@ classdef ExSignal < handle
         HasSignal=true;
         HasSpectrum=false;
         FreqWindow;
+        HasFreqWindow=false;
         SignalFeatures struct;
         SpectrumFeatures struct;
         FreqPeaks=1;
@@ -64,8 +65,11 @@ classdef ExSignal < handle
                         end
                     case 'fftsource'
                         obj.SetFFTSource(varargin{2});
+                    case 'signal'
+                        obj.HasSignal=varargin{2};
                     case 'spectrum'
                         obj.SetSpectrum(varargin{2})
+                        obj.HasSpectrum=true;
                     case 'signalnorm'
                         if varargin{2}==true
                             obj.Signal=ExSignal.NormalizeSignal(obj.Signal);
@@ -73,6 +77,7 @@ classdef ExSignal < handle
                         end
                     case 'freqwindow'
                         obj.FreqWindow=varargin{2};
+                        obj.HasFreqWindow=true;
                     case 'freqpeaks'
                         if varargin{2}>0 && varargin{2}<50
                             obj.FreqPeaks=varargin{2};
@@ -206,6 +211,7 @@ classdef ExSignal < handle
                 end
 
             else
+<<<<<<< Updated upstream
                 if obj.PlotSpectrum
                     if ~obj.SpecAxSet
                         obj.SpecAx=subplot(1,2,2);
@@ -213,6 +219,11 @@ classdef ExSignal < handle
                     hold(obj.SpecAx,'on');
                     PlotSpectrumFeatures(obj,obj.SpecAx);
                 end
+=======
+                hold on;
+                ax=gca;
+                PlotSpectrumFeatures(obj,ax);
+>>>>>>> Stashed changes
             end
         end
 
@@ -250,7 +261,15 @@ classdef ExSignal < handle
         end
 
         function PlotSpectrumFeatures(obj,ax)
-            plot(ax,obj.Frequency,obj.Spectrum);
+            tf=table(obj.Frequency,obj.Spectrum,'VariableNames',{'f','y'});
+%             y=obj.Spectrum;
+
+            xlimval=[min(tf.f),max(tf.f)];
+            if obj.HasFreqWindow
+                tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
+                xlimval=obj.FreqWindow;
+            end
+            plot(ax,tf.f,tf.y);
 
             scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled');
 
@@ -269,6 +288,7 @@ classdef ExSignal < handle
 
                 plot(x,y,'-k');
             end
+            xlim(ax,xlimval);
         end
 
         function ReturnFeatures(obj)

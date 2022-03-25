@@ -23,6 +23,7 @@ classdef ExSignal < handle
         HasSignal=true;
         HasSpectrum=false;
         FreqWindow;
+        HasFr
         SignalFeatures struct;
         SpectrumFeatures struct;
         FreqPeaks=1;
@@ -49,8 +50,11 @@ classdef ExSignal < handle
                         end
                     case 'fftsource'
                         obj.SetFFTSource(varargin{2});
+                    case 'signal'
+                        obj.HasSignal=varargin{2};
                     case 'spectrum'
                         obj.SetSpectrum(varargin{2})
+                        obj.HasSpectrum=true;
                     case 'signalnorm'
                         if varargin{2}==true
                             obj.Signal=ExSignal.NormalizeSignal(obj.Signal);
@@ -114,6 +118,7 @@ classdef ExSignal < handle
                 PlotSpectrumFeatures(obj,ax2);
 
             else
+                hold on;
                 ax=gca;
                 PlotSpectrumFeatures(obj,ax);
             end
@@ -322,14 +327,13 @@ classdef ExSignal < handle
                         out.(sprintf("FreqAmp%d",i))=NaN;
                         out.(sprintf("FreqWidth%d",i))=NaN;
                     end
-
+                    
+                    out.HarmRat=0;
                     
                     if i<=size(Tff,1)
                         if i>1
-                            out.(sprintf("HarmRat%d",i-1))=Tff.Amp(i-1)/Tff.Amp(i);
+                            out.HarmRat=out.HarmRat+Tff.Amp(i-1)/Tff.Amp(i);
                         end
-                    else
-                        out.(sprintf("HarmRat%d",i-1))=NaN;
                     end
                     
                 end
