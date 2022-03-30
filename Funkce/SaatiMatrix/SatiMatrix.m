@@ -67,18 +67,21 @@ classdef SatiMatrix < SupSati
                     score(row,col)=GetScore(obj,row,col);
                 end
             end
+            score=score;
             obj.ScoreMat=score;
             obj.Score=sum(score,2);
+            obj.Score=1-obj.Score;
             obj.OutTable=[obj.InTable, table(obj.Score,'VariableNames',"Score")];
             out=obj.OutTable;
         end
         
         %Count a single score----------------------------------------------
         function score=GetScore(obj,row,col)
-            if strcmp(obj.WTable{col,end},"Min")
-                score=obj.Fi(col)*((obj.InT(row,col)-obj.Min(col))/(obj.Max(col)-obj.Min(col)));
-            else
-                score=obj.Fi(col)*((obj.Max(col)-obj.InT(row,col))/(obj.Max(col)-obj.Min(col)));
+            switch lower(char(obj.WTable.Demmand(col)))
+                case "min"
+                    score=obj.Fi(col)*((obj.InT(row,col)-obj.Min(col))/(obj.Max(col)-obj.Min(col)));
+                case "max"
+                    score=obj.Fi(col)*((obj.Max(col)-obj.InT(row,col))/(obj.Max(col)-obj.Min(col)));
             end
         end
         
