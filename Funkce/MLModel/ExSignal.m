@@ -28,7 +28,7 @@ classdef ExSignal < handle
         SpectrumFeatures struct;
         FreqPeaks=1;
         Option struct;
-<<<<<<< HEAD
+
         SigAx;
         SpecAx;
         Fig;
@@ -41,9 +41,9 @@ classdef ExSignal < handle
         SigAxSet=false;
         SpecAxSet=false;
         SetAnnotate=false;
-=======
+
         AttSuccess=false;
->>>>>>> 97a34d14597af3e6a0f9d6c622217e6b162e2c8b
+
     end
 
     methods
@@ -211,7 +211,7 @@ classdef ExSignal < handle
                 end
 
             else
-<<<<<<< Updated upstream
+
                 if obj.PlotSpectrum
                     if ~obj.SpecAxSet
                         obj.SpecAx=subplot(1,2,2);
@@ -219,11 +219,11 @@ classdef ExSignal < handle
                     hold(obj.SpecAx,'on');
                     PlotSpectrumFeatures(obj,obj.SpecAx);
                 end
-=======
+
                 hold on;
                 ax=gca;
                 PlotSpectrumFeatures(obj,ax);
->>>>>>> Stashed changes
+
             end
         end
 
@@ -413,9 +413,12 @@ classdef ExSignal < handle
             out=struct;
             fr=obj.Frequency;
             ftrsh=max(obj.Spectrum(fr>100))*0.1;
-            
+            tf=table(obj.Spectrum,obj.Frequency,'VariableNames',{'y','f'});
+            if obj.HasFreqWindow
+                tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
+            end
 
-            [fpks,flocs,w,p]=findpeaks(obj.Spectrum(fr>100),fr(fr>100),'MinPeakHeight',ftrsh,'MinPeakDistance',(obj.SamplingFreq/2*0.001),'NPeaks',20);
+            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',(obj.SamplingFreq/2*0.001),'NPeaks',20);
             
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
             Tf=Tf(Tf.Prom>max(Tf.Prom)*0.1,:);
@@ -449,11 +452,11 @@ classdef ExSignal < handle
                     
                     out.HarmRat=0;
                     
-                    if i<=size(Tff,1)
-                        if i>1
-                            out.HarmRat=out.HarmRat+Tff.Amp(i-1)/Tff.Amp(i);
-                        end
-                    end
+%                     if i<=size(Tff,1)
+%                         if i>1
+%                             out.HarmRat=out.HarmRat+Tff.Amp(i-1)/Tff.Amp(i);
+%                         end
+%                     end
                     
                 end
             end
