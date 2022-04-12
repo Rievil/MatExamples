@@ -1,14 +1,13 @@
 classdef SupSati < handle
     properties
+        Version=0;
+        VerTable;
     end
     
     methods
         %Superclass constructor--------------------------------------------
-        function obj=SupSati(InT,Columns)
-            obj.InTable=InT;
-            obj.InT=InT{:,Columns};
-            obj.Columns=Columns;            
-            obj.Names={InT.Properties.VariableNames{Columns}};
+        function obj=SupSati(~)
+
         end
         
         %Save of object----------------------------------------------------
@@ -18,6 +17,12 @@ classdef SupSati < handle
             save(filename,'tmp');
         end
         
+        function ChangeVersion(obj)
+            obj.Version=obj.Version+1;
+            obj.VerTable=[obj.VerTable; table(obj.Version,{obj.InTable},{obj.WTable},...
+                'VairableNames',{'ID','InTable','WTable'})];
+        end
+
         %Load of object----------------------------------------------------
         function load(obj)
            filename=[obj.Path '\SatiMatrixVar.mat'];
@@ -40,6 +45,17 @@ classdef SupSati < handle
                 table(obj.Fi,'VariableNames',"Fi")];
             
             writetable(exTable,filename);
+        end
+        
+        %programitcally insert wtable_______________________________________
+        function push(obj,wta)
+            obj.WTable=wta;
+%             ChangeVersion(obj);
+        end
+        
+        %programitcally export wtable_______________________________________
+        function wta=pull(obj)
+            wta=obj.WTable;
         end
     end
 end

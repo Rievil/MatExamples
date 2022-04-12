@@ -30,8 +30,16 @@ classdef SatiMatrix < SupSati
     
     methods (Access = public)
         %Object constructor------------------------------------------------
-        function obj=SatiMatrix(InT,Columns,Path)
-            obj@SupSati(InT,Columns);
+        function obj=SatiMatrix(~)
+            obj@SupSati;
+        end
+
+        function set(obj,InT,Columns,Path)
+            obj.InTable=InT;
+            obj.InT=InT{:,Columns};
+            obj.Columns=Columns;            
+            obj.Names={InT.Properties.VariableNames{Columns}};
+
             obj.Path=Path;
             %obj.Columns=Columns;
             
