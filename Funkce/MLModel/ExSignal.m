@@ -141,7 +141,7 @@ classdef ExSignal < handle
                     case 'figure'
                         obj.Fig=varargin{2};
                         obj.FigSet=true;
-                        clrf(obj.Fig);
+%                         clrf(obj.Fig);
                     case 'signalax'
                         obj.SigAx=varargin{2};
                         obj.SigAxSet=true;
@@ -195,7 +195,7 @@ classdef ExSignal < handle
                 else
                     if obj.PlotSignals
                         if ~obj.SigAxSet
-                            obj.SigAx=axis(obj.Fig);
+                            obj.SigAx=obj.Fig.CurrentAxes;
                         end
                         hold(obj.SigAx,'on');
                         PlotSignalFeatures(obj,obj.SigAx);
@@ -247,7 +247,7 @@ classdef ExSignal < handle
             scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,'^k','filled','DisplayName','AE Hits');
             
             if obj.SignalAtt
-                newx=linspace(min(obj.Option.Peaks.Time),max(obj.Option.Peaks.Time),10)';
+                newx=linspace(min(obj.Option.Peaks.Time),max(obj.Option.Peaks.Time),100)';
                 newy=obj.Option.Atten.Fitobj(newx);
                 plot(ax,newx,newy,'-r');
                 
@@ -311,6 +311,13 @@ classdef ExSignal < handle
             height=mean(obj.Signal(int32(obj.NSamples*0.5):1:end))+...
                 std(obj.Signal(int32(obj.NSamples*0.5):1:end))*obj.NoiseMultiplier;
             
+            endheight=mean(obj.Signal(int32(obj.NSamples*0.5):1:end))+...
+                2/3*std(obj.Signal(int32(obj.NSamples*0.5):1:end))...
+                /power(numel(obj.Signal(int32(obj.NSamples*0.5):1:end))-1,1/2)*800;
+
+%             height=mean(obj.Signal(int32(obj.NSamples*0.5):1:end))+...
+%                 max(obj.Signal(int32(obj.NSamples*0.5):1:end))*obj.NoiseMultiplier/100;
+%             height=0.03;
             pulseSNR = snr(time,obj.Signal);
         
             [pks,locs]=findpeaks(obj.Signal,time,'MinPeakHeight',height,...
@@ -341,7 +348,7 @@ classdef ExSignal < handle
         
             iup=find(obj.Signal>Trsh,1,'first');
             
-            idown=find(obj.Signal>Trsh,1,'last');
+            idown=find(obj.Signal>endheight,1,'last');
             
             if iup>0
             else
