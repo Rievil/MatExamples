@@ -35,28 +35,41 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
                 for k=1:numel(valcols)
                     
                     switch org2{1}
+                        case 'none'
+                            skip=true;
                         case 'mean'
                             name='Mean';
                             arr=mean(B{:,valcols(k)});
+                            skip=false;
                         case 'std'
                             name='Std';
                             arr=std(B{:,valcols(k)});
+                            skip=false;
                         case 'modus'
                             name='Modus';
                             arr = mode(B{:,valcols(k)});
+                            skip=false;
                         case 'median'
                             name='Median';
                             arr = median(B{:,valcols(k)});
+                            skip=false;
                         case 'max'
                             name='Max';
                             arr = max(B{:,valcols(k)});
+                            skip=false;
                         case 'min'
                             name='Min';
                             arr = min(B{:,valcols(k)});
+                            skip=false;
                     end
-                    newname=sprintf('%s%s',name,varnames{valcols(k)});
-                    ssT=table(arr,'VariableNames',{newname});
-                    rT=[rT, ssT];
+
+                    if ~skip
+                        newname=sprintf('%s%s',name,varnames{valcols(k)});
+                        ssT=table(arr,'VariableNames',{newname});
+                        rT=[rT, ssT];
+                    else
+                         rT=rT;
+                    end
                 end            
                 org2(1)=[];
             end
