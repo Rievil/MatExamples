@@ -4,7 +4,14 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
     com=[];
     varnames=inT.Properties.VariableNames;
     for i=1:numel(namcol)
-        unqVal{i}=unique(inT{:,namcol(i)});
+        coldata=inT{:,namcol(i)};
+
+        switch class(coldata)
+            case 'cell'
+                coldata=string(coldata);
+            otherwise
+        end
+        unqVal{i}=unique(coldata);
         unqValNum{i}=1:1:numel(unqVal{i});
         com=[com, sprintf('unqValNum{%d},',i)];
     end
