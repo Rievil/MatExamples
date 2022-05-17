@@ -33,10 +33,11 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
 
             oT=table;
             for i=1:numel(valcols)
-                oT=[oT, table({B{:,valcols(i)}},'VariableNames',varnames(valcols(i)))];
+                oT=[oT, table(B{:,valcols(i)},'VariableNames',varnames(valcols(i)))];
             end
             
-            rT=[B(1,namcol),oT];
+            rT=B(1,namcol);
+            rT.FilteredTable={oT};
             org2=org;
             while numel(org2)>0
                 for k=1:numel(valcols)
