@@ -512,7 +512,7 @@ classdef ExSignal < handle
                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
             end
 
-            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',(obj.SamplingFreq/2*0.005),'NPeaks',20);
+            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.05,'NPeaks',20);
             
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
             Tf=Tf(Tf.Prom>max(Tf.Prom)*0.001,:);
