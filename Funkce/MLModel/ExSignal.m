@@ -316,10 +316,10 @@ classdef ExSignal < handle
 %             y=obj.Spectrum;
 
             xlimval=[min(tf.f),max(tf.f)];
-            if obj.HasFreqWindow
-                tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
-                xlimval=obj.FreqWindow;
-            end
+%             if obj.HasFreqWindow
+%                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
+%                 xlimval=obj.FreqWindow;
+%             end
             go(1)=plot(ax,tf.f,tf.y,'DisplayName','Spectrum');
 
             go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName','Main Dominant frequency');
@@ -334,9 +334,15 @@ classdef ExSignal < handle
             go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(2:end),obj.Option.FreqPeaks.Amp(2:end),'^k','filled',...
                 'DisplayName','Other Dominant frequencies');
             
-            spanidx=[obj.Option.SpectrumParams.AttLeft,obj.Option.SpectrumParams.AttRight];
-            go(end+1)=scatter(ax,tf.f(spanidx),...
-                tf.y(spanidx),'ob','filled',...
+
+
+            fa=[obj.Option.SpectrumParams.AttLfreq;
+                obj.Option.SpectrumParams.AttRfreq];
+            ya=[obj.Option.SpectrumParams.AttLamp;
+                obj.Option.SpectrumParams.AttRamp];
+
+            go(end+1)=scatter(ax,fa,...
+                ya,'ob','filled',...
                 'DisplayName',sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt));
 
 
@@ -357,7 +363,7 @@ classdef ExSignal < handle
             end
 
             xlim(ax,xlimval);
-
+            ylim(ax,[0,obj.Option.FreqPeaks.Amp(1)*1.2]);
             if obj.SetAnnotate
                 lgd=legend(ax,go,'location','eastoutside','FontSize',8);
                 lgd.EdgeColor='none';
@@ -510,11 +516,14 @@ classdef ExSignal < handle
             fr=obj.Frequency;
             ftrsh=max(obj.Spectrum(fr>100))*0.1;
             tf=table(obj.Spectrum,obj.Frequency,'VariableNames',{'y','f'});
+            tfo=tf;
             if obj.HasFreqWindow
                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
+%                 tf.y(tf.f<=obj.FreqWindow(1) | tf.f>=obj.FreqWindow(2),:)=0;
             end
 
-            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.05,'NPeaks',20);
+            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.05,'NPeaks',20,...
+                'MinPeakProminence',max(tf.y)*0.01);
             
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
             Tf=Tf(Tf.Prom>max(Tf.Prom)*0.001,:);
@@ -522,28 +531,36 @@ classdef ExSignal < handle
             if size(Tf,1)<obj.FreqPeaks
                 warning(sprintf("Property 'FreqPeaks' was set to %d, but only %d meanigful peaks were extracted",obj.FreqPeaks,size(Tf,1)));
             end
-                
+            
+%             Tf(Tf.Freq<obj.FreqWindow(1) | Tf.Freq>obj.FreqWindow(2),:)=[];
+            
             Tf=sortrows(Tf,'Amp','Descend');
             obj.Option(1).FreqPeaks=Tf;
-
-            trsh=Tf.Amp(1)/power(2,0.5);
-
+            
+            idxspec=find(obj.Spectrum==Tf.Amp(1));
+            
+            [decadatt,param]=ExSignal.GetDecadAtt(tfo.f,tfo.y,idxspec);
             idx=find(tf.f==Tf.Freq(1));
-            fleft=find(tf.y>trsh,1,'first');
+            
 
-            fright=find(tf.y>trsh,1,'
-');
-
-            decadatt=pi()*(tf.f(fright)-tf.f(fleft))/Tf.Amp(1);
-            out.DecadAtt=decadatt;
+            if ~strcmp(class(decadatt),'double')
+                out.DecadAtt=NaN;
+            else
+                if decadatt>0
+                    out.DecadAtt=decadatt;
+                else
+                    out.DecadAtt=NaN;
+                end
+            end
             
             SpectrumParams=struct;
             SpectrumParams.DomAmpIdx=idx;
             SpectrumParams.DomAmpVal=tf.f(idx);
-            SpectrumParams.AttLeft=fleft;
-            SpectrumParams.AttRight=fright;
-            SpectrumParams.AttLeftVal=tf.f(fleft);
-            SpectrumParams.AttRightVal=tf.f(fright);
+            SpectrumParams.AttLamp=param.Lamp;
+            SpectrumParams.AttRamp=param.Ramp;
+            SpectrumParams.AttLfreq=param.Lfreq;
+            SpectrumParams.AttRfreq=param.Rfreq;
+
             obj.Option(1).SpectrumParams=SpectrumParams;
             
             Tff=sortrows(Tf,'Freq','Ascend');
@@ -666,6 +683,34 @@ classdef ExSignal < handle
             else
                 out.AttSuccess=false;
             end
+        end
+
+        function [decadatt,param]=GetDecadAtt(x,y,idx)
+            trsh=y(idx)/power(2,0.5);
+            ymax=y(idx);
+            y(y>trsh)=0;
+            lidx=idx;
+            ridx=idx;
+            
+            lval=0;
+            rval=0;
+            while lval==0
+                lidx=lidx-1;
+                lval=y(lidx);
+            end
+
+            while rval==0
+                ridx=ridx+1;
+                rval=y(ridx);
+            end
+            jmen=x(ridx)-x(lidx);
+            cit=ymax;
+            decadatt=pi()*jmen/cit;
+            param=struct;
+            param.Lamp=lval;
+            param.Ramp=rval;
+            param.Lfreq=x(lidx);
+            param.Rfreq=x(ridx);
         end
         
         function [fig]=EasyPlot(filename)
