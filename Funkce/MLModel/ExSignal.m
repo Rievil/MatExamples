@@ -257,6 +257,7 @@ classdef ExSignal < handle
 
             end
         end
+        
 
     end
 
@@ -664,5 +665,34 @@ classdef ExSignal < handle
                 out.AttSuccess=false;
             end
         end
+        
+        function [fig]=EasyPlot(filename)
+            signal=readtable(filename,'NumHeaderLines',7,'Delimiter',';','DecimalSeparator','.');
+            signal.Properties.VariableNames={'Time','Amp'};
+            dur=[signal.Time(end)-signal.Time(1)];
+            samples=size(signal,1);
+            freq=samples/dur;
+            tic;
+            exobj=ExSignal(signal.Amp,freq,'freqwindow',[100 20e+3],'signalatt',true,'noise',40,...
+                'DeadTimeSeparator',1200,'fftsource','full','window','hamming');
+            disp(toc);
+            %
+            fig=figure;
+            t=tiledlayout(2,1,'Padding','tight','TileSpacing','tight');
+        
+            nexttile;
+            ax1=gca;
+            xlabel(ax1,'Čas [s]');
+            ylabel(ax1,'Amplituda [V]');
+            
+            nexttile;
+            ax2=gca;
+            xlabel(ax2,'Frekvence [Hz]');
+            ylabel(ax2,'Amplituda [V]');
+            
+            plot(exobj,'signalax',ax1,'spectrumax',ax2,'annotate',true);
+            delete(exobj);
+        end
+        
     end
 end
