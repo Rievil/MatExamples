@@ -8,11 +8,12 @@ classdef ExSignal < handle
         FNSamples;
         Spectrum;
         Features;
+        Frequency;
     end
 
     properties (Dependent)
         Time;
-        Frequency;
+        
     end
 
     properties (SetAccess=private)
@@ -20,6 +21,7 @@ classdef ExSignal < handle
         Scale='lin';
         NoiseMultiplier=5;
         FFTSource='full';
+        SpectrumType='fft;'
         PartSignal;
         HasSignal=true;
         HasSpectrum=false;
@@ -40,7 +42,7 @@ classdef ExSignal < handle
     properties (Hidden)
         FigSet=false;
         PlotSignals=true;
-        PlotSpectrum=false;
+        PlotSpectrum=true;
         SigAxSet=false;
         SpecAxSet=false;
         SetAnnotate=false;
@@ -67,65 +69,80 @@ classdef ExSignal < handle
             obj.Period=1/freq;
             obj.NSamples=numel(obj.Signal);
 
-
-            while numel(varargin)>0
-                
-                switch lower(varargin{1})
-                    case 'scale'
-                        obj.SetScale(char(varargin{2}));
-                    case 'noise'
-                        if varargin{2}>0 && varargin{2}<100
-                            obj.NoiseMultiplier=varargin{2};
-                        end
-                    case 'fftsource'
-                        obj.SetFFTSource(varargin{2});
-                    case 'signal'
-                        obj.HasSignal=varargin{2};
-                    case 'spectrum'
-                        obj.SetSpectrum(varargin{2})
-                        obj.HasSpectrum=true;
-                    case 'window'
-                        switch lower(varargin{2})
-                            case 'hamming' 
-                                obj.Window='hamming';
-                            case 'hanning'
-                                obj.Window=varargin{2};
-                            otherwise
-                        end
-                        obj.UseWindow=true;
-                    case 'signalnorm'
-                        if varargin{2}==true
-                            obj.Signal=ExSignal.NormalizeSignal(obj.Signal);
-                        else
-                        end
-                    case 'freqwindow'
-                        obj.FreqWindow=varargin{2};
-                        obj.HasFreqWindow=true;
-                    case 'freqpeaks'
-                        if varargin{2}>0 && varargin{2}<50
-                            obj.FreqPeaks=varargin{2};
-                        end
-                    case 'deadtimeseparator'
-                        obj.DeadTimeSeparator=varargin{2};
-                    case 'ignore'
-                    case 'signalatt'
-                        if varargin{2}==true
-                            obj.SignalAtt=true;
-                        else
-                            obj.SignalAtt=false;
-                        end
+%             if numel(varargin)>0
+            if ~isempty(varargin)
+                while numel(varargin)>0
+                    
+                    switch lower(varargin{1})
+                        case 'scale'
+                            obj.SetScale(char(varargin{2}));
+                        case 'noise'
+                            if varargin{2}>0 && varargin{2}<100
+                                obj.NoiseMultiplier=varargin{2};
+                            end
+                        case 'fftsource'
+                            obj.SetFFTSource(varargin{2});
+                        case 'signal'
+                            obj.HasSignal=varargin{2};
+                        case 'spectrum'
+                            obj.SetSpectrum(varargin{2})
+                            obj.HasSpectrum=true;
+                        case 'window'
+                            switch lower(varargin{2})
+                                case 'hamming' 
+                                    obj.Window='hamming';
+                                case 'hanning'
+                                    obj.Window=varargin{2};
+                                otherwise
+                            end
+                            obj.UseWindow=true;
+                        case 'signalnorm'
+                            if varargin{2}==true
+                                obj.Signal=ExSignal.NormalizeSignal(obj.Signal);
+                            else
+                            end
+                        case 'freqwindow'
+                            obj.FreqWindow=varargin{2};
+                            obj.HasFreqWindow=true;
+                        case 'freqpeaks'
+                            if varargin{2}>0 && varargin{2}<50
+                                obj.FreqPeaks=varargin{2};
+                            end
+                        case 'deadtimeseparator'
+                            obj.DeadTimeSeparator=varargin{2};
+                        case 'ignore'
+                        case 'signalatt'
+                            if varargin{2}==true
+                                obj.SignalAtt=true;
+                            else
+                                obj.SignalAtt=false;
+                            end
+                        case 'spectrumtype'
+                            switch lower(char(varargin{2}))
+                                case 'fft'
+                                    obj.SpectrumType='fft';
+                                case 'power'
+                                    obj.SpectrumType='power';
+                            end
+                    end
+                    varargin(1:2)=[];
                 end
-                varargin(1:2)=[];
             end
             
             if obj.HasSignal
                 SignalExtraction(obj);
-                
+                switch obj.SpectrumType
+                    case 'fft'
+                        fun=@GetFFT;
+                    case 'power'
+                        fun=@GetPowerSpectrum;
+                end
+
                 switch obj.FFTSource
                     case 'full'
-                        GetFFT(obj,obj.Signal);
+                       fun(obj);
                     case 'part'
-                        GetFFT(obj,obj.PartSignal);
+                       fun(obj);
                 end
             end
 
@@ -140,10 +157,6 @@ classdef ExSignal < handle
             time=linspace(0,obj.Period*numel(obj.Signal),numel(obj.Signal))';
         end
 
-        function freq=get.Frequency(obj)
-            freq=zeros(obj.FNSamples,1);
-            freq(:,1)=linspace(0,obj.SamplingFreq/2,obj.FNSamples)';
-        end
 
         function plot(obj,varargin)
             
@@ -202,9 +215,18 @@ classdef ExSignal < handle
                     end
                 else
                     obj.Fig=figure;
+                    t=tiledlayout('flow','Padding','Tight','TileSpacing','tight');
+                    nexttile;
+                    hold on;
+                    obj.SigAx=gca;
+                    obj.SigAxSet=true;
+                    nexttile;
+                    obj.SpecAx=gca;
+                    hold on;
+                    obj.SpecAxSet=true;
                 end
             end
-            
+%             
 
             if obj.HasSignal==true
                 if obj.PlotSignals && obj.PlotSpectrum
@@ -290,7 +312,7 @@ classdef ExSignal < handle
             go(end+1)=plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
             plot(ax,obj.Option.XDown,obj.Option.YDown,'--r');
             
-            go(end+1)=scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,'^k','filled','DisplayName','Hits');
+            go(end+1)=scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,5,'ok','filled','DisplayName','Hits');
             
             [maxA,I]=max(obj.Option.Peaks.Amp);
             go(end+1)=scatter(ax,obj.Option.Peaks.Time(I),obj.Option.Peaks.Amp(I),'ro','Filled','DisplayName','Max. amplitude');
@@ -300,10 +322,11 @@ classdef ExSignal < handle
                 newy=obj.Option.Atten.Fitobj(newx);
                 go(end+1)=plot(ax,newx,newy,'-r','DisplayName','Attenuation curve');
             end
-            xlimleft=time(pidx(1))*0.9;
-            xlimright=time(pidx(end))*1.5;
 
-            xlim(ax,[xlimleft,xlimright]);
+%             xlimleft=time(pidx(1))*0.9;
+%             xlimright=time(pidx(end))*1.5;
+%             xlim(ax,[xlimleft,xlimright]);
+
             if obj.SetAnnotate
                 lgd=legend(ax,go,'location','eastoutside','FontSize',8);
                 lgd.EdgeColor='none';
@@ -321,8 +344,9 @@ classdef ExSignal < handle
 %                 xlimval=obj.FreqWindow;
 %             end
             go(1)=plot(ax,tf.f,tf.y,'DisplayName','Spectrum');
-
-            go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName','Main Dominant frequency');
+            if size(obj.Option.FreqPeaks,1)>0
+                go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName','Main Dominant frequency');
+            end
 
 
             if size(obj.Option.FreqPeaks,1)<obj.FreqPeaks
@@ -638,7 +662,8 @@ classdef ExSignal < handle
             end
         end
     
-        function GetFFT(obj,signal) 
+        function GetFFT(obj) 
+            signal=obj.Signal;
             obj.HasSpectrum=true;
             obj.NSamples=numel(signal);
             
@@ -657,10 +682,60 @@ classdef ExSignal < handle
             P1 = P2(1:obj.NSamples/2+1);
             P1(2:end-1) = 2*P1(2:end-1);
 
-
-
+            
+            
             obj.Spectrum=P1;
             obj.FNSamples=numel(P1);
+            freq=zeros(obj.FNSamples,1);
+            freq(:,1)=linspace(0,obj.SamplingFreq/2,obj.FNSamples)';
+            obj.HasSpectrum=true;
+            obj.Frequency=freq;
+        end
+
+        function GetPowerSpectrum(obj)
+            tuReal = "seconds";
+            time=obj.Time;
+            signal=obj.Signal;
+            Fs=obj.SamplingFreq;
+            % Compute effective sampling rate.
+            tNumeric = time2num(time,tuReal);
+            [Fs,irregular] = effectivefs(tNumeric);
+            Ts = 1/Fs;
+    
+            % Resample non-uniform signals.
+            x = signal;
+            if irregular
+                x = resample(x,tNumeric,Fs,'linear');
+            end
+    
+            % Set Welch spectrum parameters.
+            L = fix(length(x)/4.5);
+            noverlap = fix(L*50/100);
+            win = window(@hamming,L);
+    
+            % Compute the power spectrum.
+            [ps,f] = pwelch(x,win,noverlap,[],Fs);
+            w = 2*pi*f;
+    
+            % Convert frequency unit.
+            factor = funitconv('rad/TimeUnit', 'Hz', 'seconds');
+            w = factor*w;
+            Fs = 2*pi*factor*Fs;
+    
+            % Remove frequencies above Nyquist frequency.
+            I = w<=(Fs/2+1e4*eps);
+            w = w(I);
+            ps = ps(I);
+    
+            % Configure the computed spectrum.
+            ps = table(w, ps, 'VariableNames', ["Frequency", "SpectrumData"]);
+            ps.Properties.VariableUnits = ["Hz", ""];
+            ps = addprop(ps, {'SampleFrequency'}, {'table'});
+            ps.Properties.CustomProperties.SampleFrequency = Fs;
+            obj.HasSpectrum=true;
+            obj.Frequency=ps.Frequency;
+            obj.Spectrum=ps.SpectrumData;
+            obj.FNSamples=numel(obj.Spectrum);
         end
         
 
@@ -671,6 +746,8 @@ classdef ExSignal < handle
             signal=signal-mean(signal);
             out=signal/max(signal);
         end
+
+        
 
 
         function out=SigAttenuation(time,amp)
