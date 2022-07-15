@@ -21,7 +21,7 @@ classdef ExSignal < handle
         Scale='lin';
         NoiseMultiplier=5;
         FFTSource='full';
-        SpectrumType='fft;'
+        SpectrumType='fft'
         PartSignal;
         HasSignal=true;
         HasSpectrum=false;
