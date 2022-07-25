@@ -1,5 +1,13 @@
 function SaveMyFig(fig,name)
     RemoveWhiteSpacePDF(fig);
+
+    plotfolder=[cd '\Plots\'];
+    
+    if ~exist(char(plotfolder), 'dir')
+       mkdir(char(plotfolder))
+    end
+
+
     folders{1}=[cd '\Plots\PNG\'];
     folders{2}=[cd '\Plots\PDF\'];
     
