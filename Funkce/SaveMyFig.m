@@ -10,6 +10,7 @@ function SaveMyFig(fig,name)
 
     folders{1}=[cd '\Plots\PNG\'];
     folders{2}=[cd '\Plots\PDF\'];
+    folders{3}=[cd '\Plots\SVG\'];
     
     for folder=folders
         if ~exist(char(folder), 'dir')
@@ -18,6 +19,8 @@ function SaveMyFig(fig,name)
     end
 
     print(fig,[char(folders{1}) char(name)],'-r400','-dpng');
+    
     exportgraphics(fig,[char(folders{2}) char(name) '.pdf'], ...
         'Resolution',300,'ContentType','vector');
+    print(fig,[char(folders{3}) char(name)],'-r400','-dsvg');
 end

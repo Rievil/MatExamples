@@ -37,6 +37,8 @@ classdef ExSignal < handle
         SigAx;
         SpecAx;
         Fig;
+        ExciterHitCount=1;
+        ExDist=0.08;
     end
 
     properties (Hidden)
@@ -101,6 +103,8 @@ classdef ExSignal < handle
                                 obj.Signal=ExSignal.NormalizeSignal(obj.Signal);
                             else
                             end
+                        case 'exciterhitcount'
+                            obj.ExciterHitCount=int32(varargin{2});
                         case 'freqwindow'
                             obj.FreqWindow=varargin{2};
                             obj.HasFreqWindow=true;
@@ -414,6 +418,17 @@ classdef ExSignal < handle
             
 %             obj.Signal=abs(obj.Signal);
             obj.AbsSignal=abs(obj.Signal);
+
+%             if obj.ExciterHitCount>1
+%                 [cumsig2,idx2]=ExSignal.FindHits(obj.Signal,obj.SamplingFreq,obj.ExDist);
+%                 if numel(idx2)==obj.ExciterHitCount
+% 
+%                     for i=1:numel(idx)-1
+%                         
+%                     end
+%                 end
+%             end
+
 
             height=mean(obj.AbsSignal(int32(obj.NSamples*0.5):1:end))+...
                 std(obj.AbsSignal(int32(obj.NSamples*0.5):1:end))*obj.NoiseMultiplier;
@@ -816,6 +831,26 @@ classdef ExSignal < handle
             
             plot(exobj,'signalax',ax1,'spectrumax',ax2,'annotate',true);
             delete(exobj);
+        end
+
+        function [cumsig2,idx]=FindHits(signal,freq,dist)
+            period=1/freq;
+            samples=numel(signal);
+            duration=samples*period;
+            time=linspace(0,duration,samples);
+        
+            cumsig=cumsum(abs(signal));
+        %     delta=linspace(cumsig(1),cumsig(end)*2,numel(cumsig))';
+            delta=linspace(cumsig(1),2.8e+4,numel(cumsig))';
+            cumsig2=cumsig-delta;
+            cumsig2=cumsig2*(-1);
+            cumsig2=cumsig2-min(cumsig2);
+        
+            [pks,locs,~,~]=findpeaks(cumsig2,time,'MinPeakProminence',max(cumsig2)*0.01,'MinPeakDistance',dist);
+            idx=zeros(numel(pks),1);
+            for i=1:numel(pks)
+                idx(i,:)=find(time==locs(i),1);
+            end
         end
         
     end
