@@ -22,7 +22,6 @@ classdef ExSignal < handle
         NoiseTrsh=5;
         NoiseMultiplier=5;
         FFTSource='full';
-        
         SpectrumType='fft'
         PartSignal;
         HasSignal=true;
@@ -42,8 +41,6 @@ classdef ExSignal < handle
         ExciterHitCount=1;
         ExDist=0.08;
         StartMethod='trsh';
-        SpectrumRange;
-        GetFreqRange=false;
     end
 
     properties (Hidden)
@@ -53,7 +50,7 @@ classdef ExSignal < handle
         SigAxSet=false;
         SpecAxSet=false;
         SetAnnotate=false;
-        
+
         AttSuccess=false;
 
     end
@@ -100,8 +97,6 @@ classdef ExSignal < handle
                         case 'spectrum'
                             obj.SetSpectrum(varargin{2})
                             obj.HasSpectrum=true;
-                        case 'getfreqrange'
-                            obj.GetFreqRange=true;
                         case 'window'
                             switch lower(varargin{2})
                                 case 'hamming' 
@@ -164,10 +159,8 @@ classdef ExSignal < handle
             end
 
             if obj.HasSpectrum
-                SpectrumExtraction(obj);
-                if obj.GetFreqRange
-                    GetSpectrumRange(obj);
-                end
+%                 SpectrumExtraction(obj);
+                SpectrumRange(obj);
             end
 
             ReturnFeatures(obj);
@@ -424,18 +417,7 @@ classdef ExSignal < handle
             if obj.HasSpectrum
                 TF=struct2table(obj.SpectrumFeatures,'AsArray',true);
             end
-
-
-
             obj.Features=[TS, TF];
-
-            if obj.GetFreqRange
-                specRange=array2table(obj.SpectrumRange.Amp');
-                specRange.Properties.VariableNames=string(obj.SpectrumRange.Range);
-
-                obj.Features=[obj.Features, specRange];
-            end
-            
         end
 
         function SignalExtraction(obj)
@@ -598,8 +580,8 @@ classdef ExSignal < handle
             obj.SignalFeatures=out;
         end
         
-        function GetSpectrumRange(obj)
-
+        function SpectrumRange(obj)
+            out=struct;
             fr=obj.Frequency;
             tf=table(obj.Spectrum,obj.Frequency,'VariableNames',{'y','f'});
             tfo=tf;
@@ -611,19 +593,18 @@ classdef ExSignal < handle
             rangeWidth=250;
             ranges=[0 3000];
             count=ceil(3000/250);
-%             res=zeros(count,1);
-            res=table;
+            res=zeros(count,1);
+            
             for i=1:count
-                range=[(i-1)*rangeWidth,i*rangeWidth];
+                range=[(i-1)*rangeWidth,i*rangewidth];
                 tfi=tf(tf.f>=range(1) & tf.f<range(2),:);
-                res=[res; table(sprintf("Range%d_%d",range(1),range(2)),max(tfi.y),'VariableNames',{'Range','Amp'})];
-%                 res(i,1)=max(tfi.y);
+                res(i,1)=max(tfi.y);
 
             end
-            res.Amp=res.Amp-min(res.Amp);
-            res.Amp=res.Amp/max(res.Amp);
-            obj.SpectrumRange=res;
-%             obj.SpectrumFeatures.Res=res;
+%             res=res-min(res);
+%             res=res/res;
+
+            obj.SpectrumFeatures.Res=res;
         end
 
         function SpectrumExtraction(obj)
@@ -884,7 +865,7 @@ classdef ExSignal < handle
         end
         
         function [fig]=EasyPlot(filename)
-            signal=readtable(filename,'NumHeaderLines',9,'Delimiter',';','DecimalSeparator',',');
+            signal=readtable(filename,'NumHeaderLines',7,'Delimiter',';','DecimalSeparator','.');
             signal.Properties.VariableNames={'Time','Amp'};
             dur=[signal.Time(end)-signal.Time(1)];
             samples=size(signal,1);
