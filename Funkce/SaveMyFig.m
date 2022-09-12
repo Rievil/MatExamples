@@ -18,7 +18,7 @@ function SaveMyFig(fig,name)
         end
     end
 
-    print(fig,[char(folders{1}) char(name)],'-r400','-dpng');
+    print(fig,[char(folders{1}) char(name)],'-r300','-dpng');
     
     exportgraphics(fig,[char(folders{2}) char(name) '.pdf'], ...
         'Resolution',300,'ContentType','vector');

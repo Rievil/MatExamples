@@ -431,6 +431,7 @@ classdef ExSignal < handle
 
             if obj.GetFreqRange
                 specRange=array2table(obj.SpectrumRange.Amp');
+                
                 specRange.Properties.VariableNames=string(obj.SpectrumRange.Range);
 
                 obj.Features=[obj.Features, specRange];
@@ -499,9 +500,6 @@ classdef ExSignal < handle
                 idown=deadtimeIdx;
             else
             end
-% 
-%             vals=vals(farr);
-%             idown=vals(deadtimeIdx);
 
 
 
