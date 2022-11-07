@@ -22,7 +22,7 @@ classdef ExSignal < handle
         NoiseTrsh=5;
         NoiseMultiplier=5;
         FFTSource='full';
-        
+        DomSig=false;
         SpectrumType='fft'
         PartSignal;
         HasSignal=true;
@@ -115,6 +115,10 @@ classdef ExSignal < handle
                             if varargin{2}==true
                                 obj.Signal=ExSignal.NormalizeSignal(obj.Signal);
                             else
+                            end
+                        case 'domsig'
+                            if logical(varargin{2})
+                                obj.DomSig=varargin{2};
                             end
                         case 'exciterhitcount'
                             obj.ExciterHitCount=int32(varargin{2});
@@ -342,10 +346,12 @@ classdef ExSignal < handle
                 newy=obj.Option.Atten.Fitobj(newx);
                 go(end+1)=plot(ax,newx,newy,'-r','DisplayName','Attenuation curve');
             end
-
-%             xlimleft=time(pidx(1))*0.9;
-%             xlimright=time(pidx(end))*1.5;
-%             xlim(ax,[xlimleft,xlimright]);
+            
+            if obj.DomSig
+                xlimleft=time(pidx(1))*0.9;
+                xlimright=time(pidx(end))*1.5;
+                xlim(ax,[xlimleft,xlimright]);
+            end
 
             if obj.SetAnnotate
                 lgd=legend(ax,go,'location','eastoutside','FontSize',8);

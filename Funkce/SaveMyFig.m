@@ -24,7 +24,7 @@ function SaveMyFig(fig,name,varargin)
         while(numel(varargin))>0
             switch lower(varargin{1})
                 case 'outformat'
-                    formats=varargin{2};
+                    formats=string(varargin{2});
             end
             varargin(1:2)=[];
         end
@@ -32,8 +32,8 @@ function SaveMyFig(fig,name,varargin)
         formats=["png","pdf","svg"];
     end
 
-    for i=1:size(formats)
-        switch formats(1)
+    for i=1:numel(formats)
+        switch formats(i)
             case "png"
                 print(fig,[char(folders{1}) char(name)],'-r300','-dpng');
             case "svg"
