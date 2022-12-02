@@ -5,10 +5,12 @@ classdef SatiMatrix < SupSati
         Score (:,1);
         OutTable; 
         ScoreMat (:,:) double;
-        
+%         Scenario; %User might pick from different scenarios with
+%         different Wtable and input matrix
+%         ScenCount (1,1);
     end
 
-    properties (Hidden)
+    properties (SetAccess=private)
         InT double;
         Names (:,1) string;
         Demand (:,1) string;
@@ -96,25 +98,31 @@ classdef SatiMatrix < SupSati
         %Create a wheight table--------------------------------------------
         function DrawTable(obj)
             
-            demmand=categorical(["Min","Max"]);
-            obj.WTable=table('RowNames',obj.Names);
-            for i=1:obj.ParamCount
-                NewTtable=table(linspace(1,1,obj.ParamCount)','VariableNames',obj.Names(i,1));
-                obj.WTable=[obj.WTable, NewTtable];
+            if size(obj.WTable,1)==size(obj.InT,2)
+
+            else
+                    
+                demmand=categorical(["Min","Max"]);
+                obj.WTable=table('RowNames',obj.Names);
+                for i=1:obj.ParamCount
+                    NewTtable=table(linspace(1,1,obj.ParamCount)','VariableNames',obj.Names(i,1));
+                    obj.WTable=[obj.WTable, NewTtable];
+                end
+                
+                dem(1:obj.ParamCount,1)=demmand(1);
+                obj.WTable=[obj.WTable, table(dem,'VariableNames',"Demmand")];
             end
-            
-            dem(1:obj.ParamCount,1)=demmand(1);
-            obj.WTable=[obj.WTable, table(dem,'VariableNames',"Demmand")];
-            
+
             pos=[200 200 obj.ParamCount*100 obj.ParamCount*25];
             posTab=[0 0 pos(3) pos(4)];
             
             obj.WFig=uifigure('Name','Wheight table','Position',pos,...
                 'CloseRequestFcn',@(src,event) DeleteFig(obj,event));
-            
+            val=logical(zeros(1,obj.ParamCount+1));
+            val(1,:)=1;
             obj.WUITable=uitable(obj.WFig,'Data',obj.WTable,...
                 'Position',posTab,...
-                'ColumnEditable',true(1:obj.ParamCount+1),...
+                'ColumnEditable',val,...
                 'DisplayDataChangedFcn',@(src,event)ChangedCell(obj,event),...
                 'CellSelectionCallback',@(src,event)SelectedTable(obj,event));
             
@@ -122,9 +130,9 @@ classdef SatiMatrix < SupSati
             coor(:,1)=double(1:obj.ParamCount);
             diagonal=[coor,coor];
             addStyle(obj.WUITable,s,'cell',diagonal);
-            if isfile([obj.Path '\SatiMatrixVar.mat'])
-                load(obj);
-            end
+%             if isfile([obj.Path '\SatiMatrixVar.mat'])
+%                 load(obj);
+%             end
         end
         
         %Callback for selection in table-----------------------------------
@@ -135,11 +143,12 @@ classdef SatiMatrix < SupSati
         
         %Callback for change in uitable------------------------------------
         function ChangedCell(obj,event)
+            sel=event.DisplaySelection;
             if obj.SelCol<(obj.ParamCount+1)
-                if obj.SelRow==obj.SelCol
-                    obj.WUITable.Data{obj.SelRow,obj.SelCol}=1;
+                if sel(1)==sel(2)
+                    obj.WUITable.Data{sel(2),sel(1)}=1;
                 else
-                    obj.WUITable.Data{obj.SelCol,obj.SelRow}=1/obj.WUITable.Data{obj.SelRow,obj.SelCol};
+                    obj.WUITable.Data{sel(2),sel(1)}=1/obj.WUITable.Data{sel(1),sel(2)};
                 end
             end
         end

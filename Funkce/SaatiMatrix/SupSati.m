@@ -49,6 +49,12 @@ classdef SupSati < handle
         
         %programitcally insert wtable_______________________________________
         function push(obj,wta)
+            T=wta;
+            names=T.Properties.RowNames;
+            if numel(names)<1
+                wtai=table('RowNames',wta.Properties.VariableNames(1:end-1));
+                wta=[wtai,wta];
+            end
             obj.WTable=wta;
 %             ChangeVersion(obj);
         end
