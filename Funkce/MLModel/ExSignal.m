@@ -53,7 +53,7 @@ classdef ExSignal < handle
         SigAxSet=false;
         SpecAxSet=false;
         SetAnnotate=false;
-        
+        Latex=false;
         AttSuccess=false;
 
     end
@@ -193,6 +193,8 @@ classdef ExSignal < handle
                             case false
                                 obj.PlotSignals=varargin{2};
                         end
+                    case 'latex'
+                        obj.Latex=varargin{2};
                     case 'plotspectrum'
                         switch varargin{2}
                             case true
@@ -390,10 +392,16 @@ classdef ExSignal < handle
                 obj.Option.SpectrumParams.AttRfreq];
             ya=[obj.Option.SpectrumParams.AttLamp;
                 obj.Option.SpectrumParams.AttRamp];
+            
+            if obj.Latex
+                lab=sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt);
+            else
+                lab=sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt);
+            end
 
             go(end+1)=scatter(ax,fa,...
                 ya,'ob','filled',...
-                'DisplayName',sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt));
+                'DisplayName',lab);
 
 
             for i=1:peaksnum
@@ -411,11 +419,21 @@ classdef ExSignal < handle
                 ynew=obj.Option.SpectrumFitObj(xnew);
                 go(end+1)=plot(ax,xnew,ynew,'--','Color',[0.6 .6 .6 .7],'DisplayName','Frequency trend');
             end
+            
+            if obj.Latex
+                xlim(ax,xlimval,'Interpreter','latex');
+            else
+                xlim(ax,xlimval);
+            end
 
-            xlim(ax,xlimval);
             ylim(ax,[0,obj.Option.FreqPeaks.Amp(1)*1.2]);
             if obj.SetAnnotate
-                lgd=legend(ax,go,'location','eastoutside','FontSize',8);
+                if obj.Latex
+                    lgd=legend(ax,go,'location','eastoutside','FontSize',8,'Interpreter','latex');
+                else
+                    lgd=legend(ax,go,'location','eastoutside','FontSize',8);
+                end
+                
                 lgd.EdgeColor='none';
             end
 
