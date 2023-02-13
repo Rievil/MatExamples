@@ -9,6 +9,8 @@ classdef ExSignal < handle
         Spectrum;
         Features;
         Frequency;
+        StartingTime=0;
+        EmptyFeatures=false;
     end
 
     properties (Dependent)
@@ -23,6 +25,7 @@ classdef ExSignal < handle
         NoiseMultiplier=5;
         FFTSource='full';
         DomSig=false;
+        SpecAtt=false;
         SpectrumType='fft'
         PartSignal;
         HasSignal=true;
@@ -81,6 +84,8 @@ classdef ExSignal < handle
                 while numel(varargin)>0
                     
                     switch lower(varargin{1})
+                        case 'specatt'
+                            obj.SpecAtt=varargin{2};
                         case 'scale'
                             obj.SetScale(char(varargin{2}));
                         case 'trsh'
@@ -95,6 +100,8 @@ classdef ExSignal < handle
                             end
                         case 'fftsource'
                             obj.SetFFTSource(varargin{2});
+                        case 'startingtime'
+                            obj.StartingTime=varargin{2};
                         case 'signal'
                             obj.HasSignal=varargin{2};
                         case 'spectrum'
@@ -179,11 +186,15 @@ classdef ExSignal < handle
 
         function time=get.Time(obj)
             time=linspace(0,obj.Period*numel(obj.Signal),numel(obj.Signal))';
+            time=time+obj.StartingTime;
         end
 
 
         function plot(obj,varargin)
-            
+            if obj.EmptyFeatures
+                return;
+            end
+
             while numel(varargin)>0
                 switch lower(varargin{1})
                     case 'plotsignal'
@@ -210,14 +221,14 @@ classdef ExSignal < handle
                         obj.PlotSignals=true;
                         obj.Fig=obj.SigAx.Parent;
                         obj.FigSet=true;
-                        cla(obj.SigAx);
+%                         cla(obj.SigAx);
                     case 'spectrumax'
                         obj.SpecAx=varargin{2};
                         obj.PlotSpectrum=true;
                         obj.SpecAxSet=true;
                         obj.Fig=obj.SigAx.Parent;
                         obj.FigSet=true;
-                        cla(obj.SpecAx);
+%                         cla(obj.SpecAx);
                     case 'annotate'
 %                         obj.SetAnnotate=true;
                         switch varargin{2}
@@ -238,7 +249,7 @@ classdef ExSignal < handle
                         obj.Fig=obj.SpecAx.Parent;
                     end
                 else
-                    obj.Fig=figure;
+                    obj.Fig=figure('CloseRequestFcn',@obj.CloseFigure);
                     t=tiledlayout('flow','Padding','Tight','TileSpacing','tight');
                     nexttile;
                     hold on;
@@ -250,6 +261,7 @@ classdef ExSignal < handle
                     obj.SpecAxSet=true;
                 end
             end
+            
 %             
 
             if obj.HasSignal==true
@@ -303,6 +315,13 @@ classdef ExSignal < handle
 
             end
         end
+
+        function CloseFigure(obj,src,evnt)
+            obj.FigSet=false;
+            obj.SigAxSet=false;
+            obj.SpecAxSet=false;
+            delete(obj.Fig);
+        end
         
 
     end
@@ -333,13 +352,16 @@ classdef ExSignal < handle
             go(end+1)=plot(ax,[time(1) time(end)],[obj.SignalFeatures.Trsh, obj.SignalFeatures.Trsh],...
                 '-','Color',[.6 .6 .6],'DisplayName',sprintf("Treashold %0.0f%% of noise",obj.NoiseMultiplier*100));
             
-            go(end+1)=plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
-            plot(ax,obj.Option.XDown,obj.Option.YDown,'--r');
+            go(end+1)=plot(ax,obj.Option.XRise,abs(obj.Option.YRise),'--r','DisplayName','RiseTime');
+            plot(ax,obj.Option.XDown,abs(obj.Option.YDown),'--r');
             
             go(end+1)=scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,5,'ok','filled','DisplayName','Hits');
             
-            [maxA,I]=max(obj.Option.Peaks.Amp);
-            go(end+1)=scatter(ax,obj.Option.Peaks.Time(I),obj.Option.Peaks.Amp(I),'ro','Filled','DisplayName','Max. amplitude');
+%             [maxA,I]=max(obj.Option.Peaks.Amp);
+            obj.Option(1).SignalMaxAmpIdx
+            xr=[obj.Time(obj.Option.SignalMaxAmpIdx),obj.Time(obj.Option.SignalMaxAmpIdx)];
+            yr=[0,abs(obj.Signal(obj.Option.SignalMaxAmpIdx))];
+            go(end+1)=plot(ax,xr,yr,'LineStyle','-','Color','k','DisplayName','Max. amplitude','LineWidth',3);
             if obj.SignalAtt
 %                 newx=linspace(obj.Option.Peaks.Time(obj.Option.SignalMaxAmpIdx),max(obj.Option.Peaks.Time),100)';
                 newx=linspace(time(pidx(1)),time(pidx(end)),100)';
@@ -357,18 +379,11 @@ classdef ExSignal < handle
                 lgd=legend(ax,go,'location','eastoutside','FontSize',8);
                 lgd.EdgeColor='none';
             end
-
         end
 
         function PlotSpectrumFeatures(obj,ax)
             tf=table(obj.Frequency,obj.Spectrum,'VariableNames',{'f','y'});
-%             y=obj.Spectrum;
-
             xlimval=[min(tf.f),max(tf.f)];
-%             if obj.HasFreqWindow
-%                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
-%                 xlimval=obj.FreqWindow;
-%             end
             go(1)=plot(ax,tf.f,tf.y,'DisplayName','Spectrum');
             if size(obj.Option.FreqPeaks,1)>0
                 go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName','Main Dominant frequency');
@@ -385,15 +400,16 @@ classdef ExSignal < handle
                 'DisplayName','Other Dominant frequencies');
             
 
-
-            fa=[obj.Option.SpectrumParams.AttLfreq;
-                obj.Option.SpectrumParams.AttRfreq];
-            ya=[obj.Option.SpectrumParams.AttLamp;
-                obj.Option.SpectrumParams.AttRamp];
-
-            go(end+1)=scatter(ax,fa,...
+            if obj.SpecAtt
+                fa=[obj.Option.SpectrumParams.AttLfreq;
+                    obj.Option.SpectrumParams.AttRfreq];
+                ya=[obj.Option.SpectrumParams.AttLamp;
+                    obj.Option.SpectrumParams.AttRamp];
+                go(end+1)=scatter(ax,fa,...
                 ya,'ob','filled',...
                 'DisplayName',sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt));
+            end
+
 
 
             for i=1:peaksnum
@@ -446,18 +462,23 @@ classdef ExSignal < handle
         end
 
         function SignalExtraction(obj)
+
             out=struct;
 
             time=obj.Time;
             
 
-            obj.AbsSignal=abs(obj.Signal);
+            obj.AbsSignal=obj.Signal;
 
             Trsh=0;
             iup=0;
             idown=0;
 
             switch obj.StartMethod
+                case 'fix'
+                    Trsh=obj.NoiseTrsh;
+                    noiseLevel=Trsh+mean(obj.Signal);
+                    iup=find(obj.Signal>Trsh,1,'first');
                 case 'trsh'
                     relativeLength=0.3;
                     height=mean(obj.AbsSignal(int32(obj.NSamples*relativeLength):1:end))+...
@@ -495,7 +516,15 @@ classdef ExSignal < handle
                     out.HitReceived=numel(idx);
             end
             
-            idown=find(obj.AbsSignal>noiseLevel,1,'last');
+            sig=obj.Signal;
+            idown=find(sig>noiseLevel,1,'last');
+%             cond=numel(sig)*0.5;
+%             while (idown-iup)<cond
+%                 sig(1:idown)=0;
+%                 idown=find(sig>noiseLevel,1,'last');
+%                 cond=numel(sig)*0.5;
+%             end
+
             farr=logical(zeros(numel(obj.Signal),1));
             farr(time>time(iup) & obj.AbsSignal>Trsh & time<time(idown))=true;
 %             farr=farr & obj.AbsSignal>Trsh;
@@ -503,7 +532,7 @@ classdef ExSignal < handle
             timediff=diff(time(farr));
             deadtimeIdx=find(timediff>obj.Period*obj.DeadTimeSeparator,1,'first');
             if deadtimeIdx>0
-                idown=deadtimeIdx;
+%                 idown=deadtimeIdx;
             else
             end
 
@@ -521,31 +550,30 @@ classdef ExSignal < handle
 
             obj.PartSignal=obj.Signal(iup:1:idown,1);
 
-            pulseSNR = snr(time,obj.Signal);
+            pulseSNR = snr(obj.Time,obj.Signal);
 
-        
-            [pks,locs]=findpeaks(obj.AbsSignal,time,'MinPeakHeight',Trsh,...
-                'MinPeakDistance',((time(end)-time(1))*0.0001));
+            minPeakDist=(obj.Time(end)-obj.Time(1))*0.0001;
+            [pks,locs]=findpeaks(obj.Signal,obj.Time,'MinPeakHeight',Trsh,...
+                'MinPeakDistance',minPeakDist);
             TS=table(pks,locs,'VariableNames',{'Amp','Time'});
             TS=TS(TS.Time>=time(iup) & TS.Time<=time(idown),:);
-
-            maxampidx=find(pks==max(pks),1);
-            if obj.SignalAtt
-                TS2=TS(TS.Time>=locs(maxampidx),:);
-
-                obj.Option(1).Atten=ExSignal.SigAttenuation(TS2{:,2},TS2{:,1});
-                if obj.Option(1).Atten.AttSuccess
-                    out.SignalAttAlpha=log(obj.Option.Atten.Fitobj.a);
-                    out.AttSSE=obj.Option.Atten.Gof.sse;
-                    out.AttR2=obj.Option.Atten.Gof.rsquare;
-%                     out.SignalAttBeta=log(obj.Option.Atten.Fitobj.b);
-                else
-                    out.SignalAttAlpha=NaN;
-                    out.AttSSE=NaN;
-                    out.AttR2=NaN;
-%                     out.SignalAttBeta=NaN;
-                end
+            TSs=sortrows(TS,'Amp','descend');
+            
+            if size(TSs,1)>0
+                maxampidx=find(obj.Time==TSs.Time(1),1);
+            else
+                [~,maxampidx] = max(obj.Signal,[],'all');
             end
+            
+%             switch obj.SignalCenterType
+%                 case 'maxamp'
+%                     maxampidx=find(obj.Time==TSs.Time(1),1);
+%                 case 'mean'
+%                     maxampidx=find(obj.Time>=mean(TSs.Time(:)),1);
+%                 otherwise
+%                     maxampidx=find(obj.Time==TSs.Time(1),1);
+%             end
+            
 
             obj.Option(1).Peaks=TS;
 
@@ -553,20 +581,17 @@ classdef ExSignal < handle
             obj.Option(1).SignalMaxAmpIdx=maxampidx;
 
             Dur=time(idown)-time(iup);
-            
-   
-
-
         
-            maxpks=pks==max(pks);
-            xrise=linspace(time(iup),mean(locs(maxpks)),2)';
-            yrise=linspace(obj.Signal(iup),mean(pks(maxpks)),2)';
+            maxpks=TSs.Amp(1);
+
+            xrise=linspace(time(iup),time(maxampidx),2)';
+            yrise=linspace(obj.Signal(iup),obj.Signal(maxampidx),2)';
             
             obj.Option(1).XRise=xrise;
             obj.Option(1).YRise=yrise;
 
-            obj.Option(1).XDown=linspace(mean(locs(maxpks)),time(idown),2)';
-            obj.Option(1).YDown=linspace(mean(pks(maxpks)),obj.Signal(idown),2)';
+            obj.Option(1).XDown=linspace(time(maxampidx),time(idown),2)';
+            obj.Option(1).YDown=linspace(obj.Signal(maxampidx),obj.Signal(idown),2)';
 
 
             asmup=(obj.Signal(iup)-obj.Signal(maxampidx))/(time(iup)-time(maxampidx));
@@ -579,7 +604,27 @@ classdef ExSignal < handle
             if isempty(asmdown)
                 asmdown=NaN;
             end
-            
+
+            if obj.SignalAtt
+                TS2=TS(TS.Time>=TSs.Time(1),:);
+
+                obj.Option(1).Atten=ExSignal.SigAttenuation(TS2{:,2},TS2{:,1});
+                if obj.Option(1).Atten.AttSuccess
+                    out.SignalAttAlpha=log(obj.Option.Atten.Fitobj.a);
+                    out.AttSSE=obj.Option.Atten.Gof.sse;
+                    out.AttR2=obj.Option.Atten.Gof.rsquare;
+                else
+                    out.SignalAttAlpha=NaN;
+                    out.AttSSE=NaN;
+                    out.AttR2=NaN;
+                end
+            end
+            artx=[obj.Option.XRise(1),obj.Option.Peaks.Time(1)];
+            arty=[obj.Option.YRise(1),obj.Option.Peaks.Amp(1)];
+            out.SignalStart=obj.Time(iup);
+            out.RiseAngle=diff(arty)/diff(artx);
+            out.SignalCenterTime=mean(TSs.Time(:));
+            out.SignalCenterAmp=mean(TSs.Amp(:));
             out.ImpulseFactor=max(abs(obj.Signal))/mean(abs(obj.Signal));
             out.NHits=numel(pks);
             out.Trsh=Trsh;
@@ -592,13 +637,15 @@ classdef ExSignal < handle
             out.Skew=skewness(obj.Signal,0);
             out.RMS=rms(obj.Signal,'omitnan');
             out.AsmpUp=asmup;
-            out.MaxAmp=max(obj.Signal);
+            out.MaxAmp=obj.Signal(maxampidx);
+            out.MaxAmpTime=obj.Time(maxampidx);
             out.AsmpDown=asmdown;
             out.RiseTime=diff(xrise);
-            out.RiseEnergy=diff(yrise);
-            out.Energy=out.Duration/sum(abs(obj.Signal));
+            out.RiseEnergy=trapz(obj.Time(iup:1:maxampidx),abs(obj.Signal(iup:1:maxampidx)));
+            out.SignalEnergy=trapz(obj.Time(iup:1:idown),abs(obj.Signal(iup:1:idown)));
             out.AvgFreq=out.NHits/out.Duration;
             out.Raval=out.MaxAmp/out.RiseTime;
+       
             obj.SignalFeatures=out;
         end
         
@@ -609,25 +656,22 @@ classdef ExSignal < handle
             tfo=tf;
             if obj.HasFreqWindow
                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
-%                 tf.y(tf.f<=obj.FreqWindow(1) | tf.f>=obj.FreqWindow(2),:)=0;
             end
 
             rangeWidth=250;
             ranges=[0 3000];
-            count=ceil(3000/250);
-%             res=zeros(count,1);
+
             res=table;
             for i=1:count
                 range=[(i-1)*rangeWidth,i*rangeWidth];
                 tfi=tf(tf.f>=range(1) & tf.f<range(2),:);
                 res=[res; table(sprintf("Range%d_%d",range(1),range(2)),max(tfi.y),'VariableNames',{'Range','Amp'})];
-%                 res(i,1)=max(tfi.y);
+
 
             end
             res.Amp=res.Amp-min(res.Amp);
             res.Amp=res.Amp/max(res.Amp);
             obj.SpectrumRange=res;
-%             obj.SpectrumFeatures.Res=res;
         end
 
         function SpectrumExtraction(obj)
@@ -638,12 +682,11 @@ classdef ExSignal < handle
             tfo=tf;
             if obj.HasFreqWindow
                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
-%                 tf.y(tf.f<=obj.FreqWindow(1) | tf.f>=obj.FreqWindow(2),:)=0;
             end
             
-            ftrsh=max(tf.y)*0.01;
+            ftrsh=max(tf.y)*0.1;
 
-            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.05,'NPeaks',10,...
+            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.001,'NPeaks',10,...
                 'MinPeakProminence',ftrsh);
             
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
@@ -652,38 +695,38 @@ classdef ExSignal < handle
             if size(Tf,1)<obj.FreqPeaks
                 warning(sprintf("Property 'FreqPeaks' was set to %d, but only %d meanigful peaks were extracted",obj.FreqPeaks,size(Tf,1)));
             end
-            
-%             Tf(Tf.Freq<obj.FreqWindow(1) | Tf.Freq>obj.FreqWindow(2),:)=[];
+
             
             Tf=sortrows(Tf,'Amp','Descend');
             obj.Option(1).FreqPeaks=Tf;
             
             idxspec=find(obj.Spectrum==Tf.Amp(1));
-            
-            [decadatt,param]=ExSignal.GetDecadAtt(tfo.f,tfo.y,idxspec);
-            idx=find(tf.f==Tf.Freq(1));
-            
 
-            if ~strcmp(class(decadatt),'double')
-                out.DecadAtt=NaN;
-            else
-                if decadatt>0
-                    out.DecadAtt=decadatt;
-                else
-                    out.DecadAtt=NaN;
-                end
-            end
+            idx=find(tf.f==Tf.Freq(1));
             
             SpectrumParams=struct;
             SpectrumParams.DomAmpIdx=idx;
             SpectrumParams.DomAmpVal=tf.f(idx);
-            SpectrumParams.AttLamp=param.Lamp;
-            SpectrumParams.AttRamp=param.Ramp;
-            SpectrumParams.AttLfreq=param.Lfreq;
-            SpectrumParams.AttRfreq=param.Rfreq;
+
+            if obj.SpecAtt
+                [decadatt,param]=ExSignal.GetDecadAtt(tfo.f,tfo.y,idxspec);
+                if ~strcmp(class(decadatt),'double')
+                    out.DecadAtt=NaN;
+                else
+                    if decadatt>0
+                        out.DecadAtt=decadatt;
+                    else
+                        out.DecadAtt=NaN;
+                    end
+                end
+
+                SpectrumParams.AttLamp=param.Lamp;
+                SpectrumParams.AttRamp=param.Ramp;
+                SpectrumParams.AttLfreq=param.Lfreq;
+                SpectrumParams.AttRfreq=param.Rfreq;
+            end
 
             obj.Option(1).SpectrumParams=SpectrumParams;
-            
             Tff=sortrows(Tf,'Freq','Ascend');
             Tff=Tff(Tff.Freq>=Tf.Freq(1),:);
             if obj.FreqPeaks==1
