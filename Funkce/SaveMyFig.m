@@ -23,7 +23,7 @@ function SaveMyFig(fig,name,varargin)
     if numel(varargin)>0
         while(numel(varargin))>0
             switch lower(varargin{1})
-                case 'outformat'
+                case 'format'
                     formats=string(varargin{2});
             end
             varargin(1:2)=[];
