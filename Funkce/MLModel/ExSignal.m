@@ -194,7 +194,12 @@ classdef ExSignal < handle
                                 obj.PlotSignals=varargin{2};
                         end
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+                    case 'latex'
+                        obj.Latex=varargin{2};
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
                     case 'latex'
                         obj.Latex=varargin{2};
@@ -217,8 +222,12 @@ classdef ExSignal < handle
                         obj.Fig=obj.SigAx.Parent;
                         obj.FigSet=true;
 <<<<<<< HEAD
+<<<<<<< HEAD
 
                         varargin(1:2)=[];
+=======
+                        cla(obj.SigAx);
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
                         cla(obj.SigAx);
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
@@ -229,10 +238,14 @@ classdef ExSignal < handle
                         obj.Fig=obj.SigAx.Parent;
                         obj.FigSet=true;
 <<<<<<< HEAD
+<<<<<<< HEAD
                         varargin(1:2)=[];
                     case 'latex'
                         obj.Interpreter=varargin{2};
                         varargin(1:2)=[];
+=======
+                        cla(obj.SpecAx);
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
                         cla(obj.SpecAx);
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
@@ -269,11 +282,14 @@ classdef ExSignal < handle
                 end
             end
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             if obj.Interpreter
                 set([obj.SpecAx,obj.SigAx],'TickLabelInterpreter','latex');
             end  
 =======
+=======
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 %             
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 
@@ -359,6 +375,7 @@ classdef ExSignal < handle
                 '-','Color',[.6 .6 .6],'DisplayName',sprintf("Treashold %0.0f%% of noise",obj.NoiseMultiplier*100));
             
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             go(end+1)=plot(ax,obj.Option.XRise,abs(obj.Option.YRise),'--r','DisplayName',rtLa);
             plot(ax,obj.Option.XDown,abs(obj.Option.YDown),'--r');
@@ -374,6 +391,15 @@ classdef ExSignal < handle
             yr=[0,abs(obj.Signal(obj.Option.SignalMaxAmpIdx))];
             go(end+1)=plot(ax,xr,yr,'LineStyle','-','Color','k','DisplayName',maxaLa,'LineWidth',3);
 
+=======
+            go(end+1)=plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
+            plot(ax,obj.Option.XDown,obj.Option.YDown,'--r');
+            
+            go(end+1)=scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,5,'ok','filled','DisplayName','Hits');
+            
+            [maxA,I]=max(obj.Option.Peaks.Amp);
+            go(end+1)=scatter(ax,obj.Option.Peaks.Time(I),obj.Option.Peaks.Amp(I),'ro','Filled','DisplayName','Max. amplitude');
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
             go(end+1)=plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
             plot(ax,obj.Option.XDown,obj.Option.YDown,'--r');
@@ -408,15 +434,21 @@ classdef ExSignal < handle
 
             xlimval=[min(tf.f),max(tf.f)];
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             go(1)=plot(ax,tf.f,tf.y,'DisplayName',specLa);
 
 =======
+=======
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 %             if obj.HasFreqWindow
 %                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
 %                 xlimval=obj.FreqWindow;
 %             end
             go(1)=plot(ax,tf.f,tf.y,'DisplayName','Spectrum');
+<<<<<<< HEAD
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
+=======
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             if size(obj.Option.FreqPeaks,1)>0
                 go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName','Main Dominant frequency');
@@ -434,7 +466,10 @@ classdef ExSignal < handle
             
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             fa=[obj.Option.SpectrumParams.AttLfreq;
@@ -447,6 +482,7 @@ classdef ExSignal < handle
             else
                 lab=sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt);
 <<<<<<< HEAD
+<<<<<<< HEAD
             end
             
             if obj.SpecAtt
@@ -457,6 +493,8 @@ classdef ExSignal < handle
                 go(end+1)=scatter(ax,fa,...
                 ya,'ob','filled',...
                 'DisplayName',logattLa);
+=======
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             end
@@ -487,7 +525,11 @@ classdef ExSignal < handle
             ylim(ax,[0,obj.Option.FreqPeaks.Amp(1)*1.2]);
             if obj.SetAnnotate
 <<<<<<< HEAD
+<<<<<<< HEAD
                 if obj.Interpreter
+=======
+                if obj.Latex
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
                 if obj.Latex
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
@@ -496,6 +538,10 @@ classdef ExSignal < handle
                     lgd=legend(ax,go,'location','eastoutside','FontSize',8);
                 end
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 =======
                 
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
@@ -724,6 +770,7 @@ classdef ExSignal < handle
             end
             
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             ftrsh=max(tf.y)*0.01;
 
@@ -731,10 +778,15 @@ classdef ExSignal < handle
             [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',max(tf.y)*0.001,'MinPeakDistance',minStep,'NPeaks',100,...
                 'MinPeakProminence',max(tf.y)*0.01,'MinPeakWidth',minStep*0.25);
 =======
+=======
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             ftrsh=max(tf.y)*0.01;
 
             [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.05,'NPeaks',10,...
                 'MinPeakProminence',ftrsh);
+<<<<<<< HEAD
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
+=======
 >>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
