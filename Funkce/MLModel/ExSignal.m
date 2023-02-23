@@ -44,7 +44,6 @@ classdef ExSignal < handle
         StartMethod='trsh';
         SpectrumRange;
         GetFreqRange=false;
-        Interpreter;
     end
 
     properties (Hidden)
@@ -187,11 +186,6 @@ classdef ExSignal < handle
             
             while numel(varargin)>0
                 switch lower(varargin{1})
-                    case 'plotall'
-                        obj.PlotSignals=true;
-                        obj.PlotSpectrum=true;
-                        obj.SetAnnotate=true;
-                        varargin(1)=[];
                     case 'plotsignal'
                         switch varargin{2}
                             case true
@@ -199,12 +193,12 @@ classdef ExSignal < handle
                             case false
                                 obj.PlotSignals=varargin{2};
                         end
-<<<<<<< Updated upstream
+<<<<<<< HEAD
+
+=======
                     case 'latex'
                         obj.Latex=varargin{2};
-=======
-                        varargin(1:2)=[];
->>>>>>> Stashed changes
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
                     case 'plotspectrum'
                         switch varargin{2}
                             case true
@@ -212,39 +206,36 @@ classdef ExSignal < handle
                             case false
                                 obj.PlotSpectrum=varargin{2};
                         end
-                        varargin(1:2)=[];
                     case 'figure'
                         obj.Fig=varargin{2};
                         obj.FigSet=true;
 %                         clrf(obj.Fig);
-                        varargin(1:2)=[];
                     case 'signalax'
                         obj.SigAx=varargin{2};
                         obj.SigAxSet=true;
                         obj.PlotSignals=true;
                         obj.Fig=obj.SigAx.Parent;
                         obj.FigSet=true;
-<<<<<<< Updated upstream
-                        cla(obj.SigAx);
-=======
-%                         cla(obj.SigAx);
+<<<<<<< HEAD
+
                         varargin(1:2)=[];
->>>>>>> Stashed changes
+=======
+                        cla(obj.SigAx);
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
                     case 'spectrumax'
                         obj.SpecAx=varargin{2};
                         obj.PlotSpectrum=true;
                         obj.SpecAxSet=true;
                         obj.Fig=obj.SigAx.Parent;
                         obj.FigSet=true;
-<<<<<<< Updated upstream
-                        cla(obj.SpecAx);
-=======
-%                         cla(obj.SpecAx);
+<<<<<<< HEAD
                         varargin(1:2)=[];
                     case 'latex'
                         obj.Interpreter=varargin{2};
                         varargin(1:2)=[];
->>>>>>> Stashed changes
+=======
+                        cla(obj.SpecAx);
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
                     case 'annotate'
 %                         obj.SetAnnotate=true;
                         switch varargin{2}
@@ -253,9 +244,8 @@ classdef ExSignal < handle
                             case false
                                 obj.SetAnnotate=varargin{2};
                         end
-                        varargin(1:2)=[];
                 end
-                
+                varargin(1:2)=[];
             end
             
             if ~obj.FigSet
@@ -276,19 +266,16 @@ classdef ExSignal < handle
                     obj.SpecAx=gca;
                     hold on;
                     obj.SpecAxSet=true;
-
                 end
             end
-<<<<<<< Updated upstream
-=======
-    
+<<<<<<< HEAD
+
             if obj.Interpreter
                 set([obj.SpecAx,obj.SigAx],'TickLabelInterpreter','latex');
-            end
-            
-            
->>>>>>> Stashed changes
+            end  
+=======
 %             
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
 
             if obj.HasSignal==true
                 if obj.PlotSignals && obj.PlotSpectrum
@@ -349,35 +336,12 @@ classdef ExSignal < handle
     methods (Access=private)
 
         function PlotSignalFeatures(obj,ax)
-            if obj.Interpreter
-                sigLa='Signal';
-                negsigLa='Negative side of signal';
-                sigtrshLa='Signal above treashold';
-                trshLa=sprintf("Treashold $%0.0f$\\%% of noise",obj.NoiseMultiplier*100);
-                rtLa='RiseTime';
-                hitsLa='Hits';
-                maxaLa='Max. amplitude';
-                attLa='Attenuation curve';
-                xlabel(ax,'Time $t$ [s]','Interpreter','latex');
-                ylabel(ax,'Amplitude $A_{s}$ [V]','Interpreter','latex');
-            else
-                sigLa='Signal';
-                negsigLa='Negative side of signal';
-                sigtrshLa='Signal above treashold';
-                trshLa=sprintf("Treashold %0.0f%% of noise",obj.NoiseMultiplier*100);
-                rtLa='RiseTime';
-                hitsLa='Hits';
-                maxaLa='Max. amplitude';
-                attLa='Attenuation curve';
-                xlabel(ax,'Time \it t \rm [s]');
-                ylabel(ax,'Amplitude \it A_{s} \rm [V]');
-            end
             time=obj.Time;
             
             pidx=obj.Option.PartSignalIDX{1}:1:obj.Option.PartSignalIDX{2};
 
 
-            go(1)=plot(ax,time,obj.Signal,'DisplayName',sigLa);
+            go(1)=plot(ax,time,obj.Signal,'DisplayName','Signal');
             
             IdxTrsh=pidx;
 
@@ -389,36 +353,41 @@ classdef ExSignal < handle
             XTrsh(BTrshIdx)=NaN;
             YTrsh(BTrshIdx)=NaN;
             
-            go(end+1)=plot(ax,time(pidx),obj.AbsSignal(pidx),'DisplayName',negsigLa,'Color',[0.6 .6 .6 .8]);
-            go(end+1)=plot(ax,XTrsh,YTrsh,'-','LineWidth',1.1,'DisplayName',sigtrshLa);
+            go(end+1)=plot(ax,time(pidx),obj.AbsSignal(pidx),'DisplayName','Negative side of signal','Color',[0.6 .6 .6 .8]);
+            go(end+1)=plot(ax,XTrsh,YTrsh,'-','LineWidth',1.1,'DisplayName','Signal above treashold');
             go(end+1)=plot(ax,[time(1) time(end)],[obj.SignalFeatures.Trsh, obj.SignalFeatures.Trsh],...
-                '-','Color',[.6 .6 .6],'DisplayName',trshLa);
+                '-','Color',[.6 .6 .6],'DisplayName',sprintf("Treashold %0.0f%% of noise",obj.NoiseMultiplier*100));
             
-<<<<<<< Updated upstream
-            go(end+1)=plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
-            plot(ax,obj.Option.XDown,obj.Option.YDown,'--r');
-=======
+<<<<<<< HEAD
+
             go(end+1)=plot(ax,obj.Option.XRise,abs(obj.Option.YRise),'--r','DisplayName',rtLa);
             plot(ax,obj.Option.XDown,abs(obj.Option.YDown),'--r');
->>>>>>> Stashed changes
-            
+   
             go(end+1)=scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,5,'ok','filled','DisplayName',hitsLa);
             
-<<<<<<< Updated upstream
+
             [maxA,I]=max(obj.Option.Peaks.Amp);
             go(end+1)=scatter(ax,obj.Option.Peaks.Time(I),obj.Option.Peaks.Amp(I),'ro','Filled','DisplayName','Max. amplitude');
-=======
-%             [maxA,I]=max(obj.Option.Peaks.Amp);
+
             obj.Option(1).SignalMaxAmpIdx
             xr=[obj.Time(obj.Option.SignalMaxAmpIdx),obj.Time(obj.Option.SignalMaxAmpIdx)];
             yr=[0,abs(obj.Signal(obj.Option.SignalMaxAmpIdx))];
             go(end+1)=plot(ax,xr,yr,'LineStyle','-','Color','k','DisplayName',maxaLa,'LineWidth',3);
->>>>>>> Stashed changes
+
+=======
+            go(end+1)=plot(ax,obj.Option.XRise,obj.Option.YRise,'--r','DisplayName','RiseTime');
+            plot(ax,obj.Option.XDown,obj.Option.YDown,'--r');
+            
+            go(end+1)=scatter(ax,obj.Option.Peaks.Time,obj.Option.Peaks.Amp,5,'ok','filled','DisplayName','Hits');
+            
+            [maxA,I]=max(obj.Option.Peaks.Amp);
+            go(end+1)=scatter(ax,obj.Option.Peaks.Time(I),obj.Option.Peaks.Amp(I),'ro','Filled','DisplayName','Max. amplitude');
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             if obj.SignalAtt
 %                 newx=linspace(obj.Option.Peaks.Time(obj.Option.SignalMaxAmpIdx),max(obj.Option.Peaks.Time),100)';
                 newx=linspace(time(pidx(1)),time(pidx(end)),100)';
                 newy=obj.Option.Atten.Fitobj(newx);
-                go(end+1)=plot(ax,newx,newy,'-r','DisplayName',attLa);
+                go(end+1)=plot(ax,newx,newy,'-r','DisplayName','Attenuation curve');
             end
             
             if obj.DomSig
@@ -428,55 +397,29 @@ classdef ExSignal < handle
             end
 
             if obj.SetAnnotate
-                if obj.Interpreter
-                    lgd=legend(ax,go,'location','eastoutside','FontSize',8,'Interpreter','latex');
-                else
-                    lgd=legend(ax,go,'location','eastoutside','FontSize',8);
-                end
+                lgd=legend(ax,go,'location','eastoutside','FontSize',8);
                 lgd.EdgeColor='none';
             end
 
         end
 
         function PlotSpectrumFeatures(obj,ax)
-            if obj.Interpreter
-                specLa='Spectrum';
-                domfrLa='Main Dominant frequency';
-                otdfLa='Other Dominant frequencies';
-                if obj.SpecAtt
-                    logattLa=sprintf('Logarithmic attenuation decrement\n$\\upsilon=%0.2e$',obj.SpectrumFeatures.DecadAtt);
-                end
-                promLa='Prominence';
-                freqtrendLa='Frequency trend';
-                xlabel('Frequency $f$ [Hz]','Interpreter','latex');
-                ylabel('Amplitude $A_{f}$ [V]','Interpreter','latex');
-            else
-                specLa='Spectrum';
-                domfrLa='Main Dominant frequency';
-                otdfLa='Other Dominant frequencies';
-                if obj.SpecAtt
-                    logattLa=sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt);
-                end
-                promLa='Prominence';
-                freqtrendLa='Frequency trend';
-                xlabel('Frequency \it f \rm [Hz]');
-                ylabel('Amplitude \it A_{f} \rm [V]');
-            end
             tf=table(obj.Frequency,obj.Spectrum,'VariableNames',{'f','y'});
-%             y=obj.Spectrum;
 
             xlimval=[min(tf.f),max(tf.f)];
-<<<<<<< Updated upstream
+<<<<<<< HEAD
+
+            go(1)=plot(ax,tf.f,tf.y,'DisplayName',specLa);
+
+=======
 %             if obj.HasFreqWindow
 %                 tf=tf(tf.f>=obj.FreqWindow(1) & tf.f<=obj.FreqWindow(2),:);
 %                 xlimval=obj.FreqWindow;
 %             end
             go(1)=plot(ax,tf.f,tf.y,'DisplayName','Spectrum');
-=======
-            go(1)=plot(ax,tf.f,tf.y,'DisplayName',specLa);
->>>>>>> Stashed changes
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             if size(obj.Option.FreqPeaks,1)>0
-                go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName',domfrLa);
+                go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(1),obj.Option.FreqPeaks.Amp(1),'or','filled','DisplayName','Main Dominant frequency');
             end
 
 
@@ -487,11 +430,13 @@ classdef ExSignal < handle
             end
 
             go(end+1)=scatter(ax,obj.Option.FreqPeaks.Freq(2:end),obj.Option.FreqPeaks.Amp(2:end),'^k','filled',...
-                'DisplayName',otdfLa);
+                'DisplayName','Other Dominant frequencies');
             
 
-<<<<<<< Updated upstream
+<<<<<<< HEAD
+=======
 
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             fa=[obj.Option.SpectrumParams.AttLfreq;
                 obj.Option.SpectrumParams.AttRfreq];
             ya=[obj.Option.SpectrumParams.AttLamp;
@@ -501,7 +446,9 @@ classdef ExSignal < handle
                 lab=sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt);
             else
                 lab=sprintf('Logarithmic attenuation decrement\n\\upsilon=%0.2e',obj.SpectrumFeatures.DecadAtt);
-=======
+<<<<<<< HEAD
+            end
+            
             if obj.SpecAtt
                 fa=[obj.Option.SpectrumParams.AttLfreq;
                     obj.Option.SpectrumParams.AttRfreq];
@@ -510,28 +457,25 @@ classdef ExSignal < handle
                 go(end+1)=scatter(ax,fa,...
                 ya,'ob','filled',...
                 'DisplayName',logattLa);
->>>>>>> Stashed changes
+=======
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             end
 
-            go(end+1)=scatter(ax,fa,...
-                ya,'ob','filled',...
-                'DisplayName',lab);
-
+            go(end+1)=scatter(ax,fa,ya,'ob','filled','DisplayName',lab);
 
             for i=1:peaksnum
                 x=[obj.Option.FreqPeaks.Freq(i),obj.Option.FreqPeaks.Freq(i)];
                 y=[obj.Option.FreqPeaks.Amp(i)-obj.Option.FreqPeaks.Prom(i),obj.Option.FreqPeaks.Amp(i)];
                 if i==1
-                    go(end+1)=plot(ax,x,y,'-k','DisplayName',promLa);
+                    go(end+1)=plot(ax,x,y,'-k','DisplayName','Prominence');
                 else
-%                     plot(ax,x,y,'-k');
                 end
             end
 
             if obj.Option.HasSpectrumFitObj
                 xnew=obj.Option.FreqPeaks.Freq(1:end);
                 ynew=obj.Option.SpectrumFitObj(xnew);
-                go(end+1)=plot(ax,xnew,ynew,'--','Color',[0.6 .6 .6 .7],'DisplayName',freqtrendLa);
+                go(end+1)=plot(ax,xnew,ynew,'--','Color',[0.6 .6 .6 .7],'DisplayName','Frequency trend');
             end
             
             if obj.Latex
@@ -542,19 +486,19 @@ classdef ExSignal < handle
 
             ylim(ax,[0,obj.Option.FreqPeaks.Amp(1)*1.2]);
             if obj.SetAnnotate
-<<<<<<< Updated upstream
-                if obj.Latex
-=======
+<<<<<<< HEAD
                 if obj.Interpreter
->>>>>>> Stashed changes
+=======
+                if obj.Latex
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
                     lgd=legend(ax,go,'location','eastoutside','FontSize',8,'Interpreter','latex');
                 else
                     lgd=legend(ax,go,'location','eastoutside','FontSize',8);
                 end
-<<<<<<< Updated upstream
-                
+<<<<<<< HEAD
 =======
->>>>>>> Stashed changes
+                
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
                 lgd.EdgeColor='none';
             end
 
@@ -632,13 +576,12 @@ classdef ExSignal < handle
                     signan(1:iup,:)=[];
                     noiseLevel=mean(signan)+std(signan)*obj.NoiseMultiplier;
                     out.HitReceived=numel(idx);
+                    
             end
             
             idown=find(obj.AbsSignal>noiseLevel,1,'last');
             farr=logical(zeros(numel(obj.Signal),1));
             farr(time>time(iup) & obj.AbsSignal>Trsh & time<time(idown))=true;
-%             farr=farr & obj.AbsSignal>Trsh;
-%             vals=linspace(1,numel(obj.AbsSignal),numel(obj.AbsSignal))';
             timediff=diff(time(farr));
             deadtimeIdx=find(timediff>obj.Period*obj.DeadTimeSeparator,1,'first');
             if deadtimeIdx>0
@@ -780,17 +723,19 @@ classdef ExSignal < handle
 %                 tf.y(tf.f<=obj.FreqWindow(1) | tf.f>=obj.FreqWindow(2),:)=0;
             end
             
-<<<<<<< Updated upstream
+<<<<<<< HEAD
+
+            ftrsh=max(tf.y)*0.01;
+
+            minStep=(obj.SamplingFreq/2000);
+            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',max(tf.y)*0.001,'MinPeakDistance',minStep,'NPeaks',100,...
+                'MinPeakProminence',max(tf.y)*0.01,'MinPeakWidth',minStep*0.25);
+=======
             ftrsh=max(tf.y)*0.01;
 
             [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',ftrsh,'MinPeakDistance',tf.f(end)*0.05,'NPeaks',10,...
                 'MinPeakProminence',ftrsh);
-=======
-            
-            minStep=(obj.SamplingFreq/2000);
-            [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',max(tf.y)*0.001,'MinPeakDistance',minStep,'NPeaks',100,...
-                'MinPeakProminence',max(tf.y)*0.01,'MinPeakWidth',minStep*0.25);
->>>>>>> Stashed changes
+>>>>>>> parent of 02151ef (Added Possibility to plot beeter)
             
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
             Tf=Tf(Tf.Prom>max(Tf.Prom)*0.001,:);
