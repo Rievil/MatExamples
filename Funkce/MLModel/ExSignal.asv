@@ -777,10 +777,9 @@ classdef ExSignal < handle
             end
 
             
-            Tf=sortrows(Tf,'Prom','Descend');
+            Tf=sortrows(Tf,'Amp','Descend');
             obj.Option(1).FreqPeaks=Tf;
-            out.AmpRatio=log(Tf.Amp(1)/obj.SignalFeatures.RiseTime);
-
+            
             idxspec=find(obj.Spectrum==Tf.Amp(1));
 
             idx=find(tf.f==Tf.Freq(1));
@@ -845,11 +844,7 @@ classdef ExSignal < handle
             out.FreqPeaks=size(Tf,1);
             out.FreqSumAmp=sum(Tf.Amp);
             out.FreqMean=sum(Tf.Freq.*Tf.Amp)/sum(Tf.Amp);
-
-            
-
             obj.SpectrumFeatures=out;
-            
         end
 
         function SetSpectrum(obj,val)
