@@ -3,7 +3,7 @@
 %   BitMaskToArray( 3 ) is [ 1 , 2 ]
 %   BitMaskToArray( 5 ) is [ 1 , 4 ]
 %
-% Copyright (c) 2012-2019 TiePie engineering
+% Copyright (c) 2012-2021 TiePie engineering
 
 function arBitValues = BitMask2Array( nMask )
     arBitValues = [];

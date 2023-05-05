@@ -1,6 +1,6 @@
 % MatlabLibTiePie - Matlab bindings for LibTiePie library
 %
-% Copyright (c) 2012-2019 TiePie engineering
+% Copyright (c) 2012-2021 TiePie engineering
 %
 % Website: http://www.tiepie.com/LibTiePie
 
@@ -26,6 +26,9 @@ classdef OscilloscopeChannel < handle
         HasTrigger;
         DataValueMin;
         DataValueMax;
+        DataRawValueMin;
+        DataRawValueZero;
+        DataRawValueMax;
         IsRangeMaxReachable;
         HasConnectionTest;
     end
@@ -55,6 +58,11 @@ classdef OscilloscopeChannel < handle
 
         function [min, max] = getDataValueRange(self)
             [min, max] = calllib(self.m_libraryName, 'ScpChGetDataValueRange', self.m_handle, self.m_ch, 0, 0);
+            self.m_library.checkLastStatus();
+        end
+
+        function [min, zero, max] = getDataRawValueRange(self)
+            [min, zero, max] = calllib(self.m_libraryName, 'ScpChGetDataRawValueRange', self.m_handle, self.m_ch, 0, 0, 0);
             self.m_library.checkLastStatus();
         end
 
@@ -224,6 +232,21 @@ classdef OscilloscopeChannel < handle
 
         function value = get.DataValueMax(self)
             value = calllib(self.m_libraryName, 'ScpChGetDataValueMax', self.m_handle, self.m_ch);
+            self.m_library.checkLastStatus();
+        end
+
+        function value = get.DataRawValueMin(self)
+            value = calllib(self.m_libraryName, 'ScpChGetDataRawValueMin', self.m_handle, self.m_ch);
+            self.m_library.checkLastStatus();
+        end
+
+        function value = get.DataRawValueZero(self)
+            value = calllib(self.m_libraryName, 'ScpChGetDataRawValueZero', self.m_handle, self.m_ch);
+            self.m_library.checkLastStatus();
+        end
+
+        function value = get.DataRawValueMax(self)
+            value = calllib(self.m_libraryName, 'ScpChGetDataRawValueMax', self.m_handle, self.m_ch);
             self.m_library.checkLastStatus();
         end
 

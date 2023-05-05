@@ -18,14 +18,19 @@ function SaveMyFig(fig,name,varargin)
         end
     end
 
-    
+    dpistr='-r300';
+    dpival=300;
     
     if numel(varargin)>0
         while(numel(varargin))>0
             switch lower(varargin{1})
                 case 'format'
                     formats=string(varargin{2});
+                case 'dpi'
+                    dpistr=char(sprintf("-r%d",varargin{2}));
+                    dpival=varargin{2};
             end
+
             varargin(1:2)=[];
         end
     else
@@ -35,12 +40,12 @@ function SaveMyFig(fig,name,varargin)
     for i=1:numel(formats)
         switch formats(i)
             case "png"
-                print(fig,[char(folders{1}) char(name)],'-r300','-dpng');
+                print(fig,[char(folders{1}) char(name)],dpistr,'-dpng');
             case "svg"
-                    print(fig,[char(folders{3}) char(name)],'-r400','-dsvg');
+                    print(fig,[char(folders{3}) char(name)],dpistr,'-dsvg');
             case "pdf"
                     exportgraphics(fig,[char(folders{2}) char(name) '.pdf'], ...
-                    'Resolution',300,'ContentType','vector');
+                    'Resolution',dpival,'ContentType','vector');
         end
     end
 end

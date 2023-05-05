@@ -15,7 +15,6 @@ classdef ExSignal < handle
 
     properties (Dependent)
         Time;
-        
     end
 
     properties (SetAccess=private)

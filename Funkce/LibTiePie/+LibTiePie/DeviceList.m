@@ -1,6 +1,6 @@
 % MatlabLibTiePie - Matlab bindings for LibTiePie library
 %
-% Copyright (c) 2012-2019 TiePie engineering
+% Copyright (c) 2012-2021 TiePie engineering
 %
 % Website: http://www.tiepie.com/LibTiePie
 
@@ -58,6 +58,11 @@ classdef DeviceList < handle
 
         function removeDevice(self, serialNumber)
             calllib(self.m_libraryName, 'LstRemoveDevice', serialNumber);
+            self.m_library.checkLastStatus();
+        end
+
+        function removeDeviceForce(self, serialNumber)
+            calllib(self.m_libraryName, 'LstRemoveDeviceForce', serialNumber);
             self.m_library.checkLastStatus();
         end
     end

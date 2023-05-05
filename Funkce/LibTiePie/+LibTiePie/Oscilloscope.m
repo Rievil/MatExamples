@@ -1,6 +1,6 @@
 % MatlabLibTiePie - Matlab bindings for LibTiePie library
 %
-% Copyright (c) 2012-2019 TiePie engineering
+% Copyright (c) 2012-2021 TiePie engineering
 %
 % Website: http://www.tiepie.com/LibTiePie
 
@@ -110,6 +110,86 @@ classdef Oscilloscope < LibTiePie.Device
         function result = cancelGetDataAsync(self)
             result = calllib(self.m_libraryName, 'ScpCancelGetDataAsync', self.m_handle);
             self.m_library.checkLastStatus();
+        end
+
+        function result = getDataRaw(self)
+            if ~self.IsDataReady
+                error('Data is not ready. Perform a measurement and wait until IsDataReady.');
+            end
+
+            channelCount = length(self.Channels);
+
+            % Calculate valid data start/length:
+            if self.m_measureMode == LibTiePie.Enum.MM.BLOCK
+                dataLength = self.m_recordLength - round(self.m_preSampleRatio * self.m_recordLength) + self.ValidPreSampleCount;
+                start = self.m_recordLength - dataLength;
+            else
+                dataLength = self.m_recordLength;
+                start = 0;
+            end
+
+            rawType = LibTiePie.Const.DataRawType.UNKNOWN;
+            for k = 0:channelCount - 1;
+                if calllib(self.m_libraryName, 'ScpChGetEnabled', self.m_handle, k)
+                    chRawType = calllib(self.m_libraryName, 'ScpChGetDataRawType', self.m_handle, k);
+                    if rawType == LibTiePie.Const.DataRawType.UNKNOWN
+                        rawType = chRawType;
+                    elseif rawType ~= chRawType
+                        error('GetDataRaw() requires all channel to use the same raw type, use GetData() instead.');
+                    end
+                end
+            end
+
+            switch rawType
+                case LibTiePie.Const.DataRawType.INT8
+                    result = zeros(dataLength, channelCount, 'int8');
+                    dataPtr = libpointer('int8Ptr', result);
+                case LibTiePie.Const.DataRawType.INT16
+                    result = zeros(dataLength, channelCount, 'int16');
+                    dataPtr = libpointer('int16Ptr', result);
+                case LibTiePie.Const.DataRawType.INT32
+                    result = zeros(dataLength, channelCount, 'int32');
+                    dataPtr = libpointer('int32Ptr', result);
+                case LibTiePie.Const.DataRawType.INT64
+                    result = zeros(dataLength, channelCount, 'int64');
+                    dataPtr = libpointer('int64Ptr', result);
+                case LibTiePie.Const.DataRawType.UINT8
+                    result = zeros(dataLength, channelCount, 'uint8');
+                    dataPtr = libpointer('uint8Ptr', result);
+                case LibTiePie.Const.DataRawType.UINT16
+                    result = zeros(dataLength, channelCount, 'uint16');
+                    dataPtr = libpointer('uint16Ptr', result);
+                case LibTiePie.Const.DataRawType.UINT32
+                    result = zeros(dataLength, channelCount, 'uint32');
+                    dataPtr = libpointer('uint32Ptr', result);
+                case LibTiePie.Const.DataRawType.UINT64
+                    result = zeros(dataLength, channelCount, 'uint64');
+                    dataPtr = libpointer('uint64Ptr', result);
+                case LibTiePie.Const.DataRawType.FLOAT32
+                    result = zeros(dataLength, channelCount, 'single');
+                    dataPtr = libpointer('singlePtr', result);
+                case LibTiePie.Const.DataRawType.FLOAT64
+                    result = zeros(dataLength, channelCount, 'double');
+                    dataPtr = libpointer('doublePtr', result);
+                otherwise
+                    error('Unsupported raw data type.');
+            end
+
+            data = calllib(self.m_libraryName, 'HlpPointerArrayNew', channelCount);
+            self.m_library.checkLastStatus();
+            c = onCleanup(@()calllib(self.m_libraryName, 'HlpPointerArrayDelete', data)); % Make sure pointer array is deleted.
+
+            for k = 0:channelCount - 1;
+                chDataPtr = dataPtr + k * dataLength;
+                calllib(self.m_libraryName, 'HlpPointerArraySet', data, k, chDataPtr);
+                self.m_library.checkLastStatus();
+            end
+
+            calllib(self.m_libraryName, 'ScpGetDataRaw', self.m_handle, data, channelCount, start, dataLength);
+            self.m_library.checkLastStatus();
+
+            % Copy the gotten data from the libpointer to the data matrix:
+            result = dataPtr.Value;
         end
 
         function start(self)

@@ -1,6 +1,6 @@
 % MatlabLibTiePie - Matlab bindings for LibTiePie library
 %
-% Copyright (c) 2012-2019 TiePie engineering
+% Copyright (c) 2012-2021 TiePie engineering
 %
 % Website: http://www.tiepie.com/LibTiePie
 

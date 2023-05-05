@@ -1,6 +1,6 @@
 // LibTiePie.pas - Unit for using LibTiePie with Pascal.
 //
-// (c) TiePie engineering 2020
+// (c) TiePie engineering 2021
 //
 // For API documentation see: http://api.tiepie.com/libtiepie
 //
@@ -24,11 +24,11 @@ uses
 const
   LIBTIEPIE_VERSION_MAJOR = 0;
   LIBTIEPIE_VERSION_MINOR = 9;
-  LIBTIEPIE_VERSION_RELEASE = 8;
-  LIBTIEPIE_VERSION_NUMBER = '0.9.8';
+  LIBTIEPIE_VERSION_RELEASE = 16;
+  LIBTIEPIE_VERSION_NUMBER = '0.9.16';
 
-  LIBTIEPIE_VERSION = '0.9.8';
-  LIBTIEPIE_REVISION = 14110;
+  LIBTIEPIE_VERSION = '0.9.16';
+  LIBTIEPIE_REVISION = 14603;
 
   LIBTIEPIE_HANDLE_INVALID = 0;
 
@@ -471,6 +471,7 @@ const
   PID_TP450 = 19; // TP450
   PID_HS4D = 20; // Handyscope HS4-DIFF
   PID_HS5 = 22; // Handyscope HS5
+  PID_HS6 = 24; // Handyscope HS6
   PID_HS6D = 25; // Handyscope HS6 DIFF
   PID_ATS610004D = 31; // ATS610004D
   PID_ATS605004D = 32; // ATS605004D
@@ -512,7 +513,7 @@ const
   {$endif MSWINDOWS}
 
   {$if defined( LINUX )}
-  sLibTiePieFileNameDefault = 'libtiepie.so.0.9.8';
+  sLibTiePieFileNameDefault = 'libtiepie.so.0.9.16';
   {$elseif defined( MACOS )}
   sLibTiePieFileNameDefault = 'libtiepie.dylib';
   {$else}
@@ -750,6 +751,10 @@ type
   TScpGetData2Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
   TScpGetData3Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; pBufferCh3 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
   TScpGetData4Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; pBufferCh3 : PSingle ; pBufferCh4 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetData5Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; pBufferCh3 : PSingle ; pBufferCh4 : PSingle ; pBufferCh5 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetData6Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; pBufferCh3 : PSingle ; pBufferCh4 : PSingle ; pBufferCh5 : PSingle ; pBufferCh6 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetData7Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; pBufferCh3 : PSingle ; pBufferCh4 : PSingle ; pBufferCh5 : PSingle ; pBufferCh6 : PSingle ; pBufferCh7 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetData8Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; pBufferCh2 : PSingle ; pBufferCh3 : PSingle ; pBufferCh4 : PSingle ; pBufferCh5 : PSingle ; pBufferCh6 : PSingle ; pBufferCh7 : PSingle ; pBufferCh8 : PSingle ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
   TScpGetValidPreSampleCount = function( hDevice : TLibTiePieHandle ) : UInt64; cdecl;
   TScpChGetDataValueRange = procedure( hDevice : TLibTiePieHandle ; wCh : Word ; pMin : PDouble ; pMax : PDouble ); cdecl;
   TScpChGetDataValueMin = function( hDevice : TLibTiePieHandle ; wCh : Word ) : Double; cdecl;
@@ -759,6 +764,10 @@ type
   TScpGetDataRaw2Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
   TScpGetDataRaw3Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; pBufferCh3 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
   TScpGetDataRaw4Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; pBufferCh3 : Pointer ; pBufferCh4 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetDataRaw5Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; pBufferCh3 : Pointer ; pBufferCh4 : Pointer ; pBufferCh5 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetDataRaw6Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; pBufferCh3 : Pointer ; pBufferCh4 : Pointer ; pBufferCh5 : Pointer ; pBufferCh6 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetDataRaw7Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; pBufferCh3 : Pointer ; pBufferCh4 : Pointer ; pBufferCh5 : Pointer ; pBufferCh6 : Pointer ; pBufferCh7 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
+  TScpGetDataRaw8Ch = function( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; pBufferCh2 : Pointer ; pBufferCh3 : Pointer ; pBufferCh4 : Pointer ; pBufferCh5 : Pointer ; pBufferCh6 : Pointer ; pBufferCh7 : Pointer ; pBufferCh8 : Pointer ; qwStartIndex : UInt64 ; qwSampleCount : UInt64 ) : UInt64; cdecl;
   TScpChGetDataRawType = function( hDevice : TLibTiePieHandle ; wCh : Word ) : LongWord; cdecl;
   TScpChGetDataRawValueRange = procedure( hDevice : TLibTiePieHandle ; wCh : Word ; pMin : PInt64 ; pZero : PInt64 ; pMax : PInt64 ); cdecl;
   TScpChGetDataRawValueMin = function( hDevice : TLibTiePieHandle ; wCh : Word ) : Int64; cdecl;
@@ -1265,6 +1274,10 @@ var
   ScpGetData2Ch : TScpGetData2Ch = nil;
   ScpGetData3Ch : TScpGetData3Ch = nil;
   ScpGetData4Ch : TScpGetData4Ch = nil;
+  ScpGetData5Ch : TScpGetData5Ch = nil;
+  ScpGetData6Ch : TScpGetData6Ch = nil;
+  ScpGetData7Ch : TScpGetData7Ch = nil;
+  ScpGetData8Ch : TScpGetData8Ch = nil;
   ScpGetValidPreSampleCount : TScpGetValidPreSampleCount = nil;
   ScpChGetDataValueRange : TScpChGetDataValueRange = nil;
   ScpChGetDataValueMin : TScpChGetDataValueMin = nil;
@@ -1274,6 +1287,10 @@ var
   ScpGetDataRaw2Ch : TScpGetDataRaw2Ch = nil;
   ScpGetDataRaw3Ch : TScpGetDataRaw3Ch = nil;
   ScpGetDataRaw4Ch : TScpGetDataRaw4Ch = nil;
+  ScpGetDataRaw5Ch : TScpGetDataRaw5Ch = nil;
+  ScpGetDataRaw6Ch : TScpGetDataRaw6Ch = nil;
+  ScpGetDataRaw7Ch : TScpGetDataRaw7Ch = nil;
+  ScpGetDataRaw8Ch : TScpGetDataRaw8Ch = nil;
   ScpChGetDataRawType : TScpChGetDataRawType = nil;
   ScpChGetDataRawValueRange : TScpChGetDataRawValueRange = nil;
   ScpChGetDataRawValueMin : TScpChGetDataRawValueMin = nil;
@@ -1784,6 +1801,10 @@ function ScpGetData1Ch( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; qwSt
 function ScpGetData2Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
 function ScpGetData3Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
 function ScpGetData4Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetData5Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetData6Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetData7Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetData8Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , pBufferCh8 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
 function ScpGetValidPreSampleCount( hDevice : TLibTiePieHandle ) : UInt64; cdecl;
 procedure ScpChGetDataValueRange( hDevice : TLibTiePieHandle ; wCh : Word ; pMin , pMax : PDouble ); cdecl;
 function ScpChGetDataValueMin( hDevice : TLibTiePieHandle ; wCh : Word ) : Double; cdecl;
@@ -1793,6 +1814,10 @@ function ScpGetDataRaw1Ch( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; q
 function ScpGetDataRaw2Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
 function ScpGetDataRaw3Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
 function ScpGetDataRaw4Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetDataRaw5Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetDataRaw6Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetDataRaw7Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
+function ScpGetDataRaw8Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , pBufferCh8 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl;
 function ScpChGetDataRawType( hDevice : TLibTiePieHandle ; wCh : Word ) : LongWord; cdecl;
 procedure ScpChGetDataRawValueRange( hDevice : TLibTiePieHandle ; wCh : Word ; pMin , pZero , pMax : PInt64 ); cdecl;
 function ScpChGetDataRawValueMin( hDevice : TLibTiePieHandle ; wCh : Word ) : Int64; cdecl;
@@ -2370,6 +2395,10 @@ begin
       ScpGetData2Ch := TScpGetData2Ch( GetProcAddress( hLibTiePie , 'ScpGetData2Ch' ) );
       ScpGetData3Ch := TScpGetData3Ch( GetProcAddress( hLibTiePie , 'ScpGetData3Ch' ) );
       ScpGetData4Ch := TScpGetData4Ch( GetProcAddress( hLibTiePie , 'ScpGetData4Ch' ) );
+      ScpGetData5Ch := TScpGetData5Ch( GetProcAddress( hLibTiePie , 'ScpGetData5Ch' ) );
+      ScpGetData6Ch := TScpGetData6Ch( GetProcAddress( hLibTiePie , 'ScpGetData6Ch' ) );
+      ScpGetData7Ch := TScpGetData7Ch( GetProcAddress( hLibTiePie , 'ScpGetData7Ch' ) );
+      ScpGetData8Ch := TScpGetData8Ch( GetProcAddress( hLibTiePie , 'ScpGetData8Ch' ) );
       ScpGetValidPreSampleCount := TScpGetValidPreSampleCount( GetProcAddress( hLibTiePie , 'ScpGetValidPreSampleCount' ) );
       ScpChGetDataValueRange := TScpChGetDataValueRange( GetProcAddress( hLibTiePie , 'ScpChGetDataValueRange' ) );
       ScpChGetDataValueMin := TScpChGetDataValueMin( GetProcAddress( hLibTiePie , 'ScpChGetDataValueMin' ) );
@@ -2379,6 +2408,10 @@ begin
       ScpGetDataRaw2Ch := TScpGetDataRaw2Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw2Ch' ) );
       ScpGetDataRaw3Ch := TScpGetDataRaw3Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw3Ch' ) );
       ScpGetDataRaw4Ch := TScpGetDataRaw4Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw4Ch' ) );
+      ScpGetDataRaw5Ch := TScpGetDataRaw5Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw5Ch' ) );
+      ScpGetDataRaw6Ch := TScpGetDataRaw6Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw6Ch' ) );
+      ScpGetDataRaw7Ch := TScpGetDataRaw7Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw7Ch' ) );
+      ScpGetDataRaw8Ch := TScpGetDataRaw8Ch( GetProcAddress( hLibTiePie , 'ScpGetDataRaw8Ch' ) );
       ScpChGetDataRawType := TScpChGetDataRawType( GetProcAddress( hLibTiePie , 'ScpChGetDataRawType' ) );
       ScpChGetDataRawValueRange := TScpChGetDataRawValueRange( GetProcAddress( hLibTiePie , 'ScpChGetDataRawValueRange' ) );
       ScpChGetDataRawValueMin := TScpChGetDataRawValueMin( GetProcAddress( hLibTiePie , 'ScpChGetDataRawValueMin' ) );
@@ -2895,6 +2928,10 @@ begin
     ScpGetData2Ch := nil;
     ScpGetData3Ch := nil;
     ScpGetData4Ch := nil;
+    ScpGetData5Ch := nil;
+    ScpGetData6Ch := nil;
+    ScpGetData7Ch := nil;
+    ScpGetData8Ch := nil;
     ScpGetValidPreSampleCount := nil;
     ScpChGetDataValueRange := nil;
     ScpChGetDataValueMin := nil;
@@ -2904,6 +2941,10 @@ begin
     ScpGetDataRaw2Ch := nil;
     ScpGetDataRaw3Ch := nil;
     ScpGetDataRaw4Ch := nil;
+    ScpGetDataRaw5Ch := nil;
+    ScpGetDataRaw6Ch := nil;
+    ScpGetDataRaw7Ch := nil;
+    ScpGetDataRaw8Ch := nil;
     ScpChGetDataRawType := nil;
     ScpChGetDataRawValueRange := nil;
     ScpChGetDataRawValueMin := nil;
@@ -3418,6 +3459,10 @@ function ScpGetData1Ch( hDevice : TLibTiePieHandle ; pBufferCh1 : PSingle ; qwSt
 function ScpGetData2Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData2Ch'{$endif};
 function ScpGetData3Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData3Ch'{$endif};
 function ScpGetData4Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData4Ch'{$endif};
+function ScpGetData5Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData5Ch'{$endif};
+function ScpGetData6Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData6Ch'{$endif};
+function ScpGetData7Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData7Ch'{$endif};
+function ScpGetData8Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , pBufferCh8 : PSingle ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetData8Ch'{$endif};
 function ScpGetValidPreSampleCount( hDevice : TLibTiePieHandle ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetValidPreSampleCount'{$endif};
 procedure ScpChGetDataValueRange( hDevice : TLibTiePieHandle ; wCh : Word ; pMin , pMax : PDouble ); cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpChGetDataValueRange'{$endif};
 function ScpChGetDataValueMin( hDevice : TLibTiePieHandle ; wCh : Word ) : Double; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpChGetDataValueMin'{$endif};
@@ -3427,6 +3472,10 @@ function ScpGetDataRaw1Ch( hDevice : TLibTiePieHandle ; pBufferCh1 : Pointer ; q
 function ScpGetDataRaw2Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw2Ch'{$endif};
 function ScpGetDataRaw3Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw3Ch'{$endif};
 function ScpGetDataRaw4Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw4Ch'{$endif};
+function ScpGetDataRaw5Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw5Ch'{$endif};
+function ScpGetDataRaw6Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw6Ch'{$endif};
+function ScpGetDataRaw7Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw7Ch'{$endif};
+function ScpGetDataRaw8Ch( hDevice : TLibTiePieHandle ; pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , pBufferCh8 : Pointer ; qwStartIndex , qwSampleCount : UInt64 ) : UInt64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpGetDataRaw8Ch'{$endif};
 function ScpChGetDataRawType( hDevice : TLibTiePieHandle ; wCh : Word ) : LongWord; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpChGetDataRawType'{$endif};
 procedure ScpChGetDataRawValueRange( hDevice : TLibTiePieHandle ; wCh : Word ; pMin , pZero , pMax : PInt64 ); cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpChGetDataRawValueRange'{$endif};
 function ScpChGetDataRawValueMin( hDevice : TLibTiePieHandle ; wCh : Word ) : Int64; cdecl; external sLibTiePieFileNameDefault {$ifdef MACOS}name '_ScpChGetDataRawValueMin'{$endif};

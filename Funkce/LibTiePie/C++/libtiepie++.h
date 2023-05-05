@@ -1353,6 +1353,38 @@ namespace LibTiePie
         return result;
       }
 
+      uint64_t getData5Ch( float* pBufferCh1 , float* pBufferCh2 , float* pBufferCh3 , float* pBufferCh4 , float* pBufferCh5 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetData5Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getData6Ch( float* pBufferCh1 , float* pBufferCh2 , float* pBufferCh3 , float* pBufferCh4 , float* pBufferCh5 , float* pBufferCh6 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetData6Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getData7Ch( float* pBufferCh1 , float* pBufferCh2 , float* pBufferCh3 , float* pBufferCh4 , float* pBufferCh5 , float* pBufferCh6 , float* pBufferCh7 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetData7Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getData8Ch( float* pBufferCh1 , float* pBufferCh2 , float* pBufferCh3 , float* pBufferCh4 , float* pBufferCh5 , float* pBufferCh6 , float* pBufferCh7 , float* pBufferCh8 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetData8Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , pBufferCh8 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
       uint64_t validPreSampleCount() const
       {
         const uint64_t result = ScpGetValidPreSampleCount( m_handle );
@@ -1396,6 +1428,38 @@ namespace LibTiePie
       uint64_t getDataRaw4Ch( void* pBufferCh1 , void* pBufferCh2 , void* pBufferCh3 , void* pBufferCh4 , uint64_t qwStartIndex , uint64_t qwSampleCount )
       {
         const uint64_t result = ScpGetDataRaw4Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getDataRaw5Ch( void* pBufferCh1 , void* pBufferCh2 , void* pBufferCh3 , void* pBufferCh4 , void* pBufferCh5 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetDataRaw5Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getDataRaw6Ch( void* pBufferCh1 , void* pBufferCh2 , void* pBufferCh3 , void* pBufferCh4 , void* pBufferCh5 , void* pBufferCh6 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetDataRaw6Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getDataRaw7Ch( void* pBufferCh1 , void* pBufferCh2 , void* pBufferCh3 , void* pBufferCh4 , void* pBufferCh5 , void* pBufferCh6 , void* pBufferCh7 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetDataRaw7Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , qwStartIndex , qwSampleCount );
+        Library::checkLastStatusAndThrowOnError();
+
+        return result;
+      }
+
+      uint64_t getDataRaw8Ch( void* pBufferCh1 , void* pBufferCh2 , void* pBufferCh3 , void* pBufferCh4 , void* pBufferCh5 , void* pBufferCh6 , void* pBufferCh7 , void* pBufferCh8 , uint64_t qwStartIndex , uint64_t qwSampleCount )
+      {
+        const uint64_t result = ScpGetDataRaw8Ch( m_handle , pBufferCh1 , pBufferCh2 , pBufferCh3 , pBufferCh4 , pBufferCh5 , pBufferCh6 , pBufferCh7 , pBufferCh8 , qwStartIndex , qwSampleCount );
         Library::checkLastStatusAndThrowOnError();
 
         return result;
