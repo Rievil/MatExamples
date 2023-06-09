@@ -3,6 +3,7 @@ classdef ExSignal < handle
         Signal;
         AbsSignal;
         SamplingFreq;
+        Hammer;
         Period;
         NSamples;
         FNSamples;
@@ -11,11 +12,12 @@ classdef ExSignal < handle
         Frequency;
         StartingTime=0;
         EmptyFeatures=false;
+        Success=true;
+        ErrMsg;
     end
 
     properties (Dependent)
         Time;
-        
     end
 
     properties (SetAccess=private)
@@ -57,9 +59,9 @@ classdef ExSignal < handle
         SigAxSet=false;
         SpecAxSet=false;
         SetAnnotate=false;
-        
+        HasHammer=false;
         AttSuccess=false;
-
+        DoFRF=false;
     end
 
     methods
@@ -110,11 +112,16 @@ classdef ExSignal < handle
                             obj.StartingTime=varargin{2};
                         case 'signal'
                             obj.HasSignal=varargin{2};
+                        case 'hammer'
+                            obj.Hammer=varargin{2};
+                            obj.HasHammer=true;
                         case 'spectrum'
                             obj.SetSpectrum(varargin{2})
                             obj.HasSpectrum=true;
                         case 'getfreqrange'
                             obj.GetFreqRange=true;
+                        case 'frf'
+                            obj.DoFRF=true;
                         case 'window'
                             switch lower(varargin{2})
                                 case 'hamming' 
@@ -163,31 +170,44 @@ classdef ExSignal < handle
                 end
             end
             
-            if obj.HasSignal
-                SignalExtraction(obj);
-                switch obj.SpectrumType
-                    case 'fft'
-                        fun=@GetFFT;
-                    case 'power'
-                        fun=@GetPowerSpectrum;
+            try
+                if obj.HasSignal
+                    
+                    SignalExtraction(obj);
+                    switch obj.SpectrumType
+                        case 'fft'
+                            fun=@GetFFT;
+                        case 'power'
+                            fun=@GetPowerSpectrum;
+                        case 'frf'
+                            fun=@GetFRFSpectrum;
+                    end
+    
+                    switch obj.FFTSource
+                        case 'full'
+                           fun(obj);
+                        case 'part'
+                           fun(obj);
+                    end
                 end
-
-                switch obj.FFTSource
-                    case 'full'
-                       fun(obj);
-                    case 'part'
-                       fun(obj);
+    
+                if obj.HasSpectrum
+                    SpectrumExtraction(obj);
+                    if obj.GetFreqRange
+                        GetSpectrumRange(obj);
+                    end
                 end
+            catch ME
+                obj.ErrMsg=ME;
+                obj.Success=false;
+%                 obj.GetEmptyFeatures;
             end
-
-            if obj.HasSpectrum
-                SpectrumExtraction(obj);
-                if obj.GetFreqRange
-                    GetSpectrumRange(obj);
-                end
+            
+            if obj.Success
+                ReturnFeatures(obj);
+            else
+                obj.Features=NaN;
             end
-
-            ReturnFeatures(obj);
         end
 
         function time=get.Time(obj)
@@ -553,12 +573,13 @@ classdef ExSignal < handle
             Trsh=0;
             iup=0;
             idown=0;
-
+            hitreceived=NaN;
             switch obj.StartMethod
                 case 'fix'
                     Trsh=obj.NoiseTrsh;
                     noiseLevel=Trsh+mean(obj.Signal);
                     iup=find(obj.Signal>Trsh,1,'first');
+                    
                 case 'trsh'
                     relativeLength=0.3;
                     height=mean(obj.AbsSignal(int32(obj.NSamples*relativeLength):1:end))+...
@@ -572,13 +593,7 @@ classdef ExSignal < handle
                         /power(numel(obj.AbsSignal(int32(obj.NSamples*relativeLength):1:end))-1,1/2)*800;
                     
                     Trsh=height;
-                    
-
-                
                     iup=find(obj.AbsSignal>Trsh,1,'first');
-                    
-
-                    
                 case 'adaptive'
                     [cumsig2,idx]=ExSignal.FindHits(obj.Signal,obj.SamplingFreq,obj.Period*10);
 
@@ -593,26 +608,19 @@ classdef ExSignal < handle
                     iup=sT.Idx(1);
                     signan(1:iup,:)=[];
                     noiseLevel=mean(signan)+std(signan)*obj.NoiseMultiplier;
-                    out.HitReceived=numel(idx);
+                    hitreceived=numel(idx);
             end
             
             sig=obj.Signal;
             idown=find(sig>noiseLevel,1,'last');
-%             cond=numel(sig)*0.5;
-%             while (idown-iup)<cond
-%                 sig(1:idown)=0;
-%                 idown=find(sig>noiseLevel,1,'last');
-%                 cond=numel(sig)*0.5;
-%             end
 
             farr=logical(zeros(numel(obj.Signal),1));
             farr(time>time(iup) & obj.AbsSignal>Trsh & time<time(idown),1)=true;
-%             farr=farr & obj.AbsSignal>Trsh;
-%             vals=linspace(1,numel(obj.AbsSignal),numel(obj.AbsSignal))';
+
             timediff=diff(time(farr));
             deadtimeIdx=find(timediff>obj.Period*obj.DeadTimeSeparator,1,'first');
+            
             if deadtimeIdx>0
-%                 idown=deadtimeIdx;
             else
             end
 
@@ -698,9 +706,19 @@ classdef ExSignal < handle
                     out.AttSSE=NaN;
                     out.AttR2=NaN;
                 end
+            
             end
+
+            if obj.HasHammer
+                y2=obj.Hammer;
+                s2Swing=abs(min(y2))+max(y2);    
+                out.s2Swing=s2Swing;
+            end
+
             artx=[obj.Option.XRise(1),obj.Option.Peaks.Time(1)];
             arty=[obj.Option.YRise(1),obj.Option.Peaks.Amp(1)];
+            
+            out.HitReceived=hitreceived;
             out.SignalStart=obj.Time(iup);
             out.RiseAngle=diff(arty)/diff(artx);
             out.SignalCenterTime=mean(TSs.Time(:));
@@ -754,6 +772,10 @@ classdef ExSignal < handle
             obj.SpectrumRange=res;
         end
 
+        % function FRFExtraction(obj)
+        % 
+        % end
+
         function SpectrumExtraction(obj)
             out=struct;
             fr=obj.Frequency;
@@ -768,18 +790,26 @@ classdef ExSignal < handle
             minStep=(obj.SamplingFreq/2000);
             [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',max(tf.y)*0.001,'MinPeakDistance',minStep,'NPeaks',100,...
                 'MinPeakProminence',max(tf.y)*0.01,'MinPeakWidth',minStep*0.25);
-            
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
+            
             Tf=Tf(Tf.Prom>max(Tf.Prom)*0.001,:);
+
+            if size(Tf,1)==0
+                
+            end
+
 
             if size(Tf,1)<obj.FreqPeaks
                 warning(sprintf("Property 'FreqPeaks' was set to %d, but only %d meanigful peaks were extracted",obj.FreqPeaks,size(Tf,1)));
             end
 
             
-            Tf=sortrows(Tf,'Amp','Descend');
+            Tf=sortrows(Tf,'Prom','Descend');
+
+
             obj.Option(1).FreqPeaks=Tf;
-            
+            out.AmpRatio=log(Tf.Amp(1)/obj.SignalFeatures.RiseTime);
+
             idxspec=find(obj.Spectrum==Tf.Amp(1));
 
             idx=find(tf.f==Tf.Freq(1));
@@ -844,8 +874,75 @@ classdef ExSignal < handle
             out.FreqPeaks=size(Tf,1);
             out.FreqSumAmp=sum(Tf.Amp);
             out.FreqMean=sum(Tf.Freq.*Tf.Amp)/sum(Tf.Amp);
+
+            obj.SpectrumFeatures=out;
+            
+        end
+
+        function GetEmptyFeatures(obj)
+            out=struct;
+            %signal features
+            if obj.HasHammer                
+                out.s2Swing=NaN;
+            end
+            
+            out.HitReceived=NaN;
+            out.SignalStart=NaN;
+            out.RiseAngle=NaN;
+            out.SignalCenterTime=NaN;
+            out.SignalCenterAmp=NaN;
+            out.ImpulseFactor=NaN;
+            out.NHits=NaN;
+            out.Trsh=NaN;
+            out.SNR=NaN;
+            out.Duration=NaN;
+            out.SwingValue=NaN;
+            out.CrestFactor=NaN;
+            out.TotalHarmonicDistortion=NaN;
+            out.Kurt=NaN;
+            out.Skew=NaN;
+            out.RMS=NaN;
+            out.AsmpUp=NaN;
+            out.MaxAmp=NaN;
+            out.MaxAmpTime=NaN;
+            out.AsmpDown=NaN;
+            out.RiseTime=NaN;
+            out.RiseEnergy=NaN;
+            out.SignalEnergy=NaN;
+            out.AvgFreq=NaN;
+            out.Raval=NaN;
+            out.EnergyRatio=NaN;
+            obj.SignalFeatures=out;
+
+            %spectral features
+            out2=struct;
+            out2.AmpRatio=NaN;
+            if obj.SpecAtt
+                out2.DecadAtt=NaN;
+            end
+            obj.Option(1).SpectrumParams=NaN;
+            if obj.FreqPeaks==1
+                out2.Freq=NaN;
+                out2.FreqAmp=NaN;
+                out2.FreqWidth=NaN;
+            else
+                for i=1:obj.FreqPeaks
+                    out2.(sprintf("Freq%d",i))=NaN;
+                    out2.(sprintf("FreqAmp%d",i))=NaN;
+                    out2.(sprintf("FreqWidth%d",i))=NaN;
+                end
+            end
+
+            out2.P1Directive=NaN;
+            out2.P2Beta=NaN;
+            obj.Option.HasSpectrumFitObj=false;
+
+            out2.FreqPeaks=NaN;
+            out2.FreqSumAmp=NaN;
+            out2.FreqMean=NaN;
             obj.SpectrumFeatures=out;
         end
+
 
         function SetSpectrum(obj,val)
             obj.HasSignal=false;
@@ -901,6 +998,27 @@ classdef ExSignal < handle
             P2 = abs(Y/obj.NSamples(1));
             P1 = P2(1:obj.NSamples/2+1);
             P1(2:end-1) = 2*P1(2:end-1);
+
+            
+            
+            obj.Spectrum=P1;
+            obj.FNSamples=numel(P1);
+            freq=zeros(obj.FNSamples,1);
+            freq(:,1)=linspace(0,obj.SamplingFreq/2,obj.FNSamples)';
+            obj.HasSpectrum=true;
+            obj.Frequency=freq;
+        end
+
+        function GetFRFSpectrum(obj)
+            signal=obj.Signal;
+            obj.HasSpectrum=true;
+
+            obj.NSamples=numel(signal);
+            
+            Yh=obj.Hammer;
+            Xh=ier.Features.Signals{i}.Signal;
+            winlen = size(Yh,1);
+            % [frf,f,coh] =modalfrf(Xh,Yh,fs,winlen,'Sensor','dis');
 
             
             
@@ -1010,9 +1128,9 @@ classdef ExSignal < handle
             param.Rfreq=x(ridx);
         end
         
-        function [fig]=EasyPlot(filename)
-            signal=readtable(filename,'NumHeaderLines',9,'Delimiter',';','DecimalSeparator',',');
-            signal.Properties.VariableNames={'Time','Amp'};
+        function [fig]=EasyPlot(signal)
+%             signal=readtable(filename,'NumHeaderLines',9,'Delimiter',';','DecimalSeparator',',');
+%             signal.Properties.VariableNames={'Time','Amp'};
             dur=[signal.Time(end)-signal.Time(1)];
             samples=size(signal,1);
             freq=samples/dur;

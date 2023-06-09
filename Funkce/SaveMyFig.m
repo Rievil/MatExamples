@@ -1,4 +1,12 @@
 function SaveMyFig(fig,name,varargin)
+    arguments
+        fig matlab.ui.Figure;
+        name string;
+    end
+    arguments (Repeating)
+        varargin {mustBeMember(varargin,["format","dpi","png","svg","pdf"])}
+    end
+
     RemoveWhiteSpacePDF(fig);
 
     plotfolder=[cd '\Plots\'];
@@ -23,6 +31,7 @@ function SaveMyFig(fig,name,varargin)
     
     if numel(varargin)>0
         while(numel(varargin))>0
+        
             switch lower(varargin{1})
                 case 'format'
                     formats=string(varargin{2});
