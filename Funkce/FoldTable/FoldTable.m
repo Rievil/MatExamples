@@ -69,6 +69,10 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
                             name='Min';
                             arr = min(B{:,valcols(k)});
                             skip=false;
+                        otherwise
+                            warning("You have entered wrong argument %s\n",org2{1});
+                            skip=true;
+                            break;
                     end
 
                     if ~skip
