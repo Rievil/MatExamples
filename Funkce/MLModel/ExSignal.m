@@ -50,6 +50,7 @@ classdef ExSignal < handle
         SpectrumRange;
         GetFreqRange=false;
         Interpreter;
+        FESett;
     end
 
     properties (Hidden)
@@ -62,6 +63,7 @@ classdef ExSignal < handle
         HasHammer=false;
         AttSuccess=false;
         DoFRF=false;
+        HasFESett=false;
     end
 
     methods
@@ -166,6 +168,9 @@ classdef ExSignal < handle
                                     obj.SpectrumType='frf';
                                     obj.DoFRF=true;
                             end
+                        case 'feset'
+                            obj.FESett=varargin{2};
+                            obj.HasFESett=true;
                     end
                     varargin(1:2)=[];
                 end
@@ -601,7 +606,9 @@ classdef ExSignal < handle
                         /power(numel(obj.AbsSignal(int32(obj.NSamples*relativeLength):1:end))-1,1/2)*800;
                     
                     Trsh=height;
+                    Trsh=Trsh*1.1;
                     iup=find(obj.AbsSignal>Trsh,1,'first');
+                    % iup=find(obj.AbsSignal>Trsh,1,'first');
                 case 'adaptive'
                     [cumsig2,idx]=ExSignal.FindHits(obj.Signal,obj.SamplingFreq,obj.Period*10);
 
@@ -797,8 +804,16 @@ classdef ExSignal < handle
                 [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakDistance',20,'NPeaks',100,...
                 'MinPeakProminence',max(tf.y)*0.001);
             else
-                [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',max(tf.y)*0.001,'MinPeakDistance',minStep,'NPeaks',100,...
+                if ~obj.HasFESett
+                    [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',max(tf.y)*0.001,'MinPeakDistance',minStep,'NPeaks',100,...
                     'MinPeakProminence',max(tf.y)*0.01,'MinPeakWidth',minStep*0.25);
+                
+                else
+                    feset=obj.FESett;
+                    [fpks,flocs,w,p]=findpeaks(tf.y,tf.f,'MinPeakHeight',feset.MinPeakHeight,'MinPeakDistance',...
+                    feset.MinPeakDistance,'NPeaks',feset.NPeaks,...
+                    'MinPeakProminence',feset.MinPeakProminence,'MinPeakWidth',feset.MinPeakWidth);
+                end
             end
             Tf=table(fpks,flocs,w,p,'VariableNames',{'Amp','Freq','Width','Prom'});
             
@@ -1175,6 +1190,17 @@ classdef ExSignal < handle
                 idx(i,:)=find(time==locs(i),1);
             end
         end
+
+        function feset=GetFeset(~)
+            feset=struct;
+            feset.MinPeakHeight=0.001;
+            feset.MinPeakDistance=100;
+            feset.NPeaks=100;
+            feset.MinPeakProminence=0.2;
+            feset.MinPeakWidth=10;
+        end
         
     end
+
+
 end

@@ -4,31 +4,13 @@ function SaveMyFig(fig,name,varargin)
         name string;
     end
     arguments (Repeating)
-        varargin {mustBeMember(varargin,["format","dpi","png","svg","pdf"])}
+        varargin;
     end
-
+    hasFolder=false;
     RemoveWhiteSpacePDF(fig);
 
-    plotfolder=[cd '\Plots\'];
-    
-    if ~exist(char(plotfolder), 'dir')
-       mkdir(char(plotfolder))
-    end
-
-
-    folders{1}=[cd '\Plots\PNG\'];
-    folders{2}=[cd '\Plots\PDF\'];
-    folders{3}=[cd '\Plots\SVG\'];
-    
-    for folder=folders
-        if ~exist(char(folder), 'dir')
-           mkdir(char(folder))
-        end
-    end
-
-    dpistr='-r300';
     dpival=300;
-    
+    dpistr='-r300';
     if numel(varargin)>0
         while(numel(varargin))>0
         
@@ -38,6 +20,13 @@ function SaveMyFig(fig,name,varargin)
                 case 'dpi'
                     dpistr=char(sprintf("-r%d",varargin{2}));
                     dpival=varargin{2};
+                case 'folder'
+                    hasFolder=true;
+                    folderOut=char(varargin{2});
+                    lastM=find(folderOut=='\');
+                    if lastM(end)==numel(folderOut)
+                        folderOut=folderOut(1:end-1);
+                    end
             end
 
             varargin(1:2)=[];
@@ -45,6 +34,36 @@ function SaveMyFig(fig,name,varargin)
     else
         formats=["png","pdf","svg"];
     end
+
+    if ~hasFolder
+        plotfolder=[cd '\Plots\'];
+        
+        if ~exist(char(plotfolder), 'dir')
+           mkdir(char(plotfolder))
+        end
+    
+    
+        folders{1}=[cd '\Plots\PNG\'];
+        folders{2}=[cd '\Plots\PDF\'];
+        folders{3}=[cd '\Plots\SVG\'];
+        
+        for folder=folders
+            if ~exist(char(folder), 'dir')
+               mkdir(char(folder))
+            end
+        end
+    else
+        folders{1}=[folderOut '\'];
+        folders{2}=[folderOut '\'];
+        folders{3}=[folderOut '\'];
+    end
+        
+
+
+    
+    
+    
+    
 
     for i=1:numel(formats)
         switch formats(i)
@@ -55,6 +74,8 @@ function SaveMyFig(fig,name,varargin)
             case "pdf"
                     exportgraphics(fig,[char(folders{2}) char(name) '.pdf'], ...
                     'Resolution',dpival,'ContentType','vector');
+            case "eps"
+                print(fig,[char(folders{1}) char(name)],dpistr,'-deps');
         end
     end
 end

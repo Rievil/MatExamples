@@ -12,12 +12,13 @@ classdef IERead < handle
         Tasks;
         SignalTable;
         Features;
-        FilesRead=false;
-        HasHammer=false;
     end
 
     properties (Hidden)
-
+        HasFileTable=false;
+        FilesRead=false;
+        HasHammer=false;
+        SigCount=0;
     end
 
     methods
@@ -39,6 +40,10 @@ classdef IERead < handle
                             obj.SFSet=true;
                         case 'filetable'
                             obj.FileTable=varargin{2};
+                            obj.HasFileTable=true;
+                        case 'signaltable'
+                            obj.SignalTable=varargin{2};
+                            obj.FilesRead=true;
                         case 'inputformat'
                             switch varargin{2}
                                 case 'tiepie'
@@ -56,9 +61,9 @@ classdef IERead < handle
         end
 
         function Run(obj)
-            TO=table;
-
+            
             if ~obj.FilesRead
+                TO=table;
                 h = waitbar(0,'Waiting...');
                 for row=1:size(obj.FileTable,1)
                     file=sprintf("%s\\%s",obj.FileTable.folder(row),obj.FileTable.name(row));
@@ -75,15 +80,15 @@ classdef IERead < handle
                 end
                 delete(h);
                 obj.FilesRead=true;
+                obj.SignalTable=TO;
             end
 
-            obj.SignalTable=TO;
+            obj.SigCount=size(obj.SignalTable,1);
             obj.SweepTable;
             StackResult(obj);
         end
 
-        function StackResult(obj)
-%             TO=[obj.FileTable,obj.SignalTable,obj.Out];
+        function FT=StackResult(obj)
             cols=obj.Out.Features{find(obj.Out.Success==1,1,'first')}.Properties.VariableNames;
             sz=numel(cols);
             T0=array2table(nan(1,sz),'VariableNames',cols);
@@ -100,7 +105,13 @@ classdef IERead < handle
                     TF=[TF; T0];
                 end
             end
-            obj.Features=[obj.FileTable,obj.SignalTable,obj.Out(:,"Success"),TF];
+
+            if obj.HasFileTable==true
+                FT=[obj.FileTable,obj.SignalTable,obj.Out(:,"Success"),TF];
+            else
+                FT=[obj.SignalTable,obj.Out(:,"Success"),TF];
+            end
+            obj.Features=FT;
         end
     end
 
@@ -116,14 +127,26 @@ classdef IERead < handle
                 % There is a parallel pool of <p.NumWorkers> workers
                 poolsize = p.NumWorkers;
             end
-
             
+            signalcolCanmes=["Signal","Signals","Item","Items"];
+            colNames=string(obj.SignalTable.Properties.VariableNames);
+            A=contains(colNames,signalcolCanmes);
+            % typer=
+            
+
             Q = parallel.pool.DataQueue;
             afterEach(Q,@(data) updatePlot);
-            f(1:size(obj.FileTable,1)) = parallel.FevalFuture;
+            f(1:obj.SigCount) = parallel.FevalFuture;
             tic;
             h = waitbar(0,'Waiting...');
-            for ii=1:numel(f)
+
+            feset=ExSignal.GetFeset;
+            feset.MinPeakProminence=5e-10;
+            feset.MinPeakDistance=40;
+            feset.MinPeakWidth=10;
+            feset.MinPeakHeight=1e-11;
+
+            for ii=1:obj.SigCount
                 switch obj.ReadType
                     case 1
                         signal=obj.SignalTable.Signals{ii};
@@ -134,6 +157,9 @@ classdef IERead < handle
                     case 3
                         signal=obj.SignalTable.Signals{ii};
                         f(ii) = parfeval(@IERead.ReadFunction3,1,signal);
+                    case 4
+                        signal=obj.SignalTable.(colNames(A)){ii};
+                        f(ii) = parfeval(@IERead.ReadFunction4,1,signal,obj.SigCol,obj.TimeCol);
                 end
             end
             updateWaitbar = @(~) waitbar(mean({f.State} == "finished"),h);
@@ -141,12 +167,14 @@ classdef IERead < handle
             afterAll(updateWaitbarFutures,@(~) delete(h),0);
             wait(f);
             toc;
+
             delete(h);
             obj.Tasks=f;
             obj.Out=array2table(fetchOutputs(f),'VariableNames',{'Features','Success'});
             obj.Out.('Success')=logical(cell2mat(obj.Out.('Success')));
         end
-
+        
+        
         
 
 
@@ -201,6 +229,23 @@ classdef IERead < handle
 
             obj=ExSignal(y,freq,'startmethod','fix','trsh',0.05,'freqpeaks',1,'fftsource','full',...
                  'DeadTimeSeparator',100,'spectrumtype','fft','signalatt',false);
+            T=obj.Features;
+
+            result={T,obj.Success};
+            delete(obj);
+            
+            clear TS obj;
+        end
+
+        function result=ReadFunction4(signal,sigcol,timecol)
+            y=signal.(sigcol)(:);
+
+            x=seconds(signal.(timecol)(:));
+
+            freq=1/(x(2)-x(1));
+
+            obj=ExSignal(y,freq,'startmethod','fix','trsh',0.002,'freqpeaks',1,'fftsource','full',...
+                 'DeadTimeSeparator',0.1,'spectrumtype','power','signalatt',false);
             T=obj.Features;
 
             result={T,obj.Success};

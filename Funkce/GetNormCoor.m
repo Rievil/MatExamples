@@ -1,5 +1,7 @@
-function [outx,outy]=GetNormCoor(axes,inx,iny) %Annotation coordinations in grafs
+function [outx,outy]=GetNormCoor(axes,inx,iny) 
+%Annotation coordinations in grafs
 %This function is focused on pacing anotation in exact coordinance
+%Author: Richard Dvorak
     fig=axes.Parent;
     axespos=axes.Position;
 %     figpos=fig.Position;
