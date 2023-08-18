@@ -47,6 +47,7 @@ classdef ShearTensile < handle
                 obj.Param=[];
             end
             obj.ValSet=true;
+            RemoveZeros(obj);
         end
         
         function SetParent(obj,parent)
@@ -66,6 +67,12 @@ classdef ShearTensile < handle
             xlim=[min(obj.RAVal),max(obj.RAVal)];
             ylim=[min(obj.AvgFreq),max(obj.AvgFreq)];
         end
+
+        function RemoveZeros(obj)
+            idx=obj.RAVal<0.000001 | obj.AvgFreq==0;
+            obj.RAVal(idx)=nan;
+            obj.AvgFreq(idx)=nan;
+        end
         
         function DataFromParam(obj,hitcount,hitduration,hitrisetime,hitamplitude)
             obj.AvgFreq=[];
@@ -79,6 +86,8 @@ classdef ShearTensile < handle
             obj.AvgFreq=obj.HitCount./(obj.HitDuration.*1e-9);
             obj.RAVal=obj.HitRiseTime./obj.HitAmplitude.*1e-7;
             
+
+
             DataFromVal(obj,obj.RAVal,obj.AvgFreq);
         end
         
@@ -164,10 +173,13 @@ classdef ShearTensile < handle
         end
         
         function PlotCenters(obj)
-            obj.Centers{1}=scatter(obj.Ax,obj.Param.XSM,obj.Param.YSM,80,'^','filled','DisplayName',sprintf('S, %s',obj.Label),...
-                'MarkerEdgeColor','k');
-            obj.Centers{2}=scatter(obj.Ax,obj.Param.XTM,obj.Param.YTM,80,'v','filled','DisplayName',sprintf('T, %s',obj.Label),...
-                'MarkerEdgeColor','k');
+            % if obj.Parent.Latex
+            
+                obj.Centers{1}=scatter(obj.Ax,obj.Param.XSM,obj.Param.YSM,80,'^','filled','DisplayName',sprintf('S, %s',obj.Label),...
+                    'MarkerEdgeColor','k');
+                obj.Centers{2}=scatter(obj.Ax,obj.Param.XTM,obj.Param.YTM,80,'v','filled','DisplayName',sprintf('T, %s',obj.Label),...
+                    'MarkerEdgeColor','k');
+            % end
         end
         
         
@@ -175,8 +187,9 @@ classdef ShearTensile < handle
             
 %             if obj.LineSet==false && obj.ParentSet==true
 %             [x,y]=obj.Parent.GetLine(max(obj.RAVal));
-            GenerateLine(obj.Parent);
-            SetLine(obj,obj.Parent.XLine,obj.Parent.YLine);
+            SetLim(obj.Parent);
+            [x,y]=GetLine(obj.Parent);
+            SetLine(obj,x,y);
 %             end
             
             if obj.LineSet==true && obj.ValSet==true
@@ -196,7 +209,9 @@ classdef ShearTensile < handle
             
         
         function CheckDivision(obj)
-            obj.Idx = inpolygon(obj.RAVal,obj.AvgFreq,[0 ; obj.XLine'; max(obj.XLine)],[ 0 ; obj.YLine' ; 0]) ;
+            alpha=obj.Parent.Alpha;
+            obj.Idx = inpolygon(obj.RAVal,obj.AvgFreq,[0 ; max(obj.RAVal)*1.1; max(obj.RAVal)*1.1],...
+                [ 0 ; max(obj.RAVal)*1.1*alpha ; 0]) ;
         end
     end
 end

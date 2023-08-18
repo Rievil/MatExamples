@@ -22,12 +22,16 @@ classdef ShearTensilePlot < handle
         MaxXLim=0;
         MaxYLim=0;
         Latex=false;
+
     end
     
     properties (Dependent)
         Count;
     end
     
+    properties (SetAccess=private)
+        GUIHan;
+    end
 
     methods
         function obj = ShearTensilePlot(~)
@@ -79,8 +83,10 @@ classdef ShearTensilePlot < handle
         end
         
         function [x,y]=GetLine(obj)
-            x=linspace(1e-3,obj.XLim(2),10e+3);
+            x=linspace(obj.XLim(1),obj.XLim(2),10e+3);
             y=x.*obj.Alpha;
+            obj.YLine=y;
+            obj.XLine=x;
         end
         
         function CalculateLine(obj,type,varargin)
@@ -121,6 +127,18 @@ classdef ShearTensilePlot < handle
             obj.SetAx(ax);
         end
         
+        function set_xlim(obj,xlimarr)
+            obj.XLim=xlimarr;
+            xlim(obj.Ax,xlimarr);
+            UpdateGUI(obj);
+        end
+
+        function set_ylim(obj,ylimarr)
+            obj.YLim=ylimarr;
+            ylim(obj.Ax,ylimarr);
+            UpdateGUI(obj);
+        end
+
         function SetLim(obj)
             for i=1:obj.Count
                 [xlim,ylim]=GetLim(obj.DataSets(i));
@@ -172,6 +190,8 @@ classdef ShearTensilePlot < handle
 
             while numel(varargin)>0
                 switch lower(varargin{1})
+                    case 'latex'
+                        obj.Latex=varargin{2};
                     case 'alpha'
                         alpha=true;
                         alphaval=varargin{2};
@@ -258,6 +278,12 @@ classdef ShearTensilePlot < handle
             
         end
         
+        function RunDivision(obj)
+            for st=obj.DataSets
+                st.Run;
+            end
+        end
+
         function ShowLegend(obj,varargin)
             lgd=legend(varargin{:});
             lgd.FontSize=8;
@@ -377,7 +403,7 @@ classdef ShearTensilePlot < handle
             ax=obj.Ax;
             obj.Red=[0.70 0.80];
 
-            plot(obj.Ax,obj.XLine,obj.YLine,'-k','HandleVisibility','off');
+            lineHandle=plot(obj.Ax,obj.XLine,obj.YLine,'-k','HandleVisibility','off');
             
             tx(1)=text(ax,[.05],[.1],'Intermediate damage','Units','normalized','FontName','Palatino linotype');
             tx(2)=text(ax,[.05],[.95],'High damage','Units','normalized','FontName','Palatino linotype');
@@ -390,13 +416,25 @@ classdef ShearTensilePlot < handle
             if isempty(idx)
                 idx=int32(numel(obj.XLine)/2);
             end
-            STR={'\leftarrow Tensile crack','Shear crack \rightarrow'};
-            tx(5)=text(ax,obj.XLine(idx)*obj.Red(1),obj.YLine(idx)*obj.Red(2),STR{1},'HorizontalAlignment','right','FontSize',8,...
+
+            if obj.Latex
+                STR={'$\leftarrow Tensile crack$','$Shear crack \rightarrow$'};
+                tx(5)=text(ax,obj.XLine(idx)*obj.Red(1),obj.YLine(idx)*obj.Red(2),STR{1},'HorizontalAlignment','right','FontSize',8,...
+                'FontName','cmr12','FontWeight','bold','interpreter','latex');
+
+                tx(6)=text(ax,obj.XLine(idx),obj.YLine(idx)*obj.Red(2),STR{2},'HorizontalAlignment','left',...
+                    'FontSize',8,'interpreter','latex',...
+                    'FontName','cmr12','FontWeight','bold');
+            else
+                STR={'\leftarrow Tensile crack','Shear crack \rightarrow'};
+                tx(5)=text(ax,obj.XLine(idx)*obj.Red(1),obj.YLine(idx)*obj.Red(2),STR{1},'HorizontalAlignment','right','FontSize',8,...
                 'FontName','Palatino linotype','FontWeight','bold');
 
-            tx(6)=text(ax,obj.XLine(idx),obj.YLine(idx)*obj.Red(2),STR{2},'HorizontalAlignment','left',...
-                'FontSize',8,...
-                'FontName','Palatino linotype','FontWeight','bold');
+                tx(6)=text(ax,obj.XLine(idx),obj.YLine(idx)*obj.Red(2),STR{2},'HorizontalAlignment','left',...
+                    'FontSize',8,...
+                    'FontName','Palatino linotype','FontWeight','bold');
+            end
+            
             
             [x,y]=GetLine(obj);
             ar=area(x,y,'FaceAlpha',0.2,'FaceColor',[0.6 0.6 .6],'HandleVisibility','off','EdgeColor','non');
@@ -418,6 +456,41 @@ classdef ShearTensilePlot < handle
                     end
                 end
             end
+            
+            if obj.Latex
+                str=sprintf("Coefficient $\\alpha$: $%0.0f$ V $\\cdot s^{-2}$",obj.Alpha);
+                disp(str);
+                tx(7)=text(ax,0.7,-0.09,str,...
+                'Units','normalized','HorizontalAlignment','left','Interpreter','latex');
+            else
+
+                tx(7)=text(ax,0.7,-0.09,sprintf("\alpha: %0.0f V \cdot s^{-2}",obj.Alpha),...
+                    'Units','normalized','HorizontalAlignment','left','FontName','Palatino linotype');
+            end
+
+            han=struct;
+            han.Line=lineHandle;
+            han.DamageText=tx(1:4);
+            han.ArrowLeft=tx(5);
+            han.ArrowRight=tx(6);
+            han.Area=ar;
+            obj.GUIHan=han;
+        end
+
+        function UpdateGUI(obj)
+            han=obj.GUIHan;
+            GetLine(obj);
+            set(han.Line,'XData',obj.XLine,'YData',obj.YLine);
+            set(han.Area,'XData',obj.XLine,'YData',obj.YLine);
+
+            idx=find(log(obj.XLine)>=log(mean(obj.XLine)*0.01),1,'first');
+
+            % if isempty(idx)
+            %     idx=int32(numel(obj.XLine)/2);
+            % end
+
+            set(han.ArrowLeft,'position',[obj.XLine(idx)*obj.Red(1),obj.YLine(idx)*obj.Red(2)]);
+            set(han.ArrowRight,'position',[obj.XLine(idx),obj.YLine(idx)*obj.Red(2)]);
         end
 
     end

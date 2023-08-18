@@ -51,6 +51,7 @@ classdef ExSignal < handle
         GetFreqRange=false;
         Interpreter;
         FESett;
+        FigSize=[20 80 600 450];
     end
 
     properties (Hidden)
@@ -250,6 +251,10 @@ classdef ExSignal < handle
                                 obj.PlotSpectrum=varargin{2};
                         end
                         varargin(1:2)=[];
+                    case 'figsize'
+                        obj.FigSize=varargin{2};
+                        varargin(1:2)=[];
+
                     case 'figure'
                         obj.Fig=varargin{2};
                         obj.FigSet=true;
@@ -295,16 +300,21 @@ classdef ExSignal < handle
                         obj.Fig=obj.SpecAx.Parent;
                     end
                 else
-                    obj.Fig=figure('CloseRequestFcn',@obj.CloseFigure);
+                    obj.Fig=figure('CloseRequestFcn',@obj.CloseFigure,'position',obj.FigSize);
                     t=tiledlayout('flow','Padding','Tight','TileSpacing','tight');
-                    nexttile;
-                    hold on;
-                    obj.SigAx=gca;
-                    obj.SigAxSet=true;
-                    nexttile;
-                    obj.SpecAx=gca;
-                    hold on;
-                    obj.SpecAxSet=true;
+                    if obj.PlotSignals==true
+                        nexttile;
+                        hold on;
+                        obj.SigAx=gca;
+                        obj.SigAxSet=true;
+                    end
+
+                    if obj.PlotSpectrum==true
+                        nexttile;
+                        obj.SpecAx=gca;
+                        hold on;
+                        obj.SpecAxSet=true;
+                    end
 
                 end
             end
@@ -386,7 +396,7 @@ classdef ExSignal < handle
                 sigLa='Signal';
                 negsigLa='Negative side of signal';
                 sigtrshLa='Signal above treashold';
-                trshLa=sprintf("Treashold $%0.0f$\\%% of noise",obj.NoiseMultiplier*100);
+                trshLa=sprintf("Threshold $%0.0f$\\%% of noise",obj.NoiseMultiplier*100);
                 rtLa='RiseTime';
                 hitsLa='Hits';
                 maxaLa='Max. amplitude';
@@ -397,7 +407,7 @@ classdef ExSignal < handle
                 sigLa='Signal';
                 negsigLa='Negative side of signal';
                 sigtrshLa='Signal above treashold';
-                trshLa=sprintf("Treashold %0.0f%% of noise",obj.NoiseMultiplier*100);
+                trshLa=sprintf("Threshold %0.0f%% of noise",obj.NoiseMultiplier*100);
                 rtLa='RiseTime';
                 hitsLa='Hits';
                 maxaLa='Max. amplitude';
@@ -491,7 +501,7 @@ classdef ExSignal < handle
             end
 
                 xlimval=[min(tf.f),max(tf.f)];
-            
+                
 
             go(1)=plot(ax,tf.f,tf.y,'DisplayName',specLa);
             if size(obj.Option.FreqPeaks,1)>0
@@ -537,7 +547,7 @@ classdef ExSignal < handle
                 go(end+1)=plot(ax,xnew,ynew,'--','Color',[0.6 .6 .6 .7],'DisplayName',freqtrendLa);
             end
 
-            xlim(ax,xlimval);
+            xlim(ax,[obj.FreqWindow(1),obj.FreqWindow(2)]);
             ylim(ax,[0,obj.Option.FreqPeaks.Amp(1)*1.2]);
             if obj.SetAnnotate
                 if obj.Interpreter
@@ -634,6 +644,7 @@ classdef ExSignal < handle
             timeC=time(farr);
             timediff=diff(timeC);
             deadtimeIdx=find(timediff>obj.DeadTimeSeparator,1,'first')-1;
+
             if deadtimeIdx>0
                 idown=find(time>timeC(deadtimeIdx),1);
             end
@@ -1143,15 +1154,11 @@ classdef ExSignal < handle
             param.Rfreq=x(ridx);
         end
         
-        function [fig]=EasyPlot(signal)
-%             signal=readtable(filename,'NumHeaderLines',9,'Delimiter',';','DecimalSeparator',',');
-%             signal.Properties.VariableNames={'Time','Amp'};
-            dur=[signal.Time(end)-signal.Time(1)];
-            samples=size(signal,1);
-            freq=samples/dur;
+        function [fig]=EasyPlot(exobj)
+
             tic;
-            exobj=ExSignal(signal.Amp,freq,'freqwindow',[100 20e+3],'signalatt',true,'noise',40,...
-                'DeadTimeSeparator',1200,'fftsource','full','window','hamming');
+            % exobj=ExSignal(signal,freq,'freqwindow',[100 20e+3],'signalatt',true,'noise',40,...
+            %     'DeadTimeSeparator',1200,'fftsource','full','window','hamming');
             disp(toc);
             %
             fig=figure;
@@ -1166,9 +1173,10 @@ classdef ExSignal < handle
             ax2=gca;
             xlabel(ax2,'Frekvence [Hz]');
             ylabel(ax2,'Amplituda [V]');
+
             
             plot(exobj,'signalax',ax1,'spectrumax',ax2,'annotate',true);
-            delete(exobj);
+            % delete(exobj);
         end
 
         function [cumsig2,idx]=FindHits(signal,freq,dist)
