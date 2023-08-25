@@ -35,6 +35,11 @@ function SaveMyFig(fig,name,varargin)
         formats=["png","pdf","svg"];
     end
 
+    % if contains(name,"..")
+    %     fo=
+    % else
+    % end
+
     if ~hasFolder
         plotfolder=[cd '\Plots\'];
         
