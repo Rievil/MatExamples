@@ -286,10 +286,15 @@ classdef ShearTensilePlot < handle
         end
 
         function ShowLegend(obj,varargin)
-            lgd=legend(varargin{:});
+            if obj.Latex
+                lgd=legend(varargin{:},'Interpreter','latex','location','best');
+            else
+                lgd=legend(varargin{:},'location','best');
+            end
             lgd.FontSize=8;
             lgd.NumColumns=2;
             lgd.EdgeColor='none';
+            lgd.Color='none';
         end
         
         function GetLimits(obj,type)
@@ -304,8 +309,6 @@ classdef ShearTensilePlot < handle
             ytmin=20e+10;
             switch type
                 case 'center'
-                    
-                    
                     for i=1:obj.Count
                         %max
                         if max(obj.DataSets(i).Param.XSM)>xsmax
@@ -460,7 +463,6 @@ classdef ShearTensilePlot < handle
             
             if obj.Latex
                 str=sprintf("Coefficient $\\alpha$: $%0.0f$ V $\\cdot s^{-2}$",obj.Alpha);
-                disp(str);
                 tx(7)=text(ax,0.7,-0.09,str,...
                 'Units','normalized','HorizontalAlignment','left','Interpreter','latex');
             else
