@@ -11,6 +11,7 @@ function SaveMyFig(fig,name,varargin)
 
     dpival=300;
     dpistr='-r300';
+    transparent=false;
     if numel(varargin)>0
         while(numel(varargin))>0
         
@@ -27,6 +28,8 @@ function SaveMyFig(fig,name,varargin)
                     if lastM(end)==numel(folderOut)
                         folderOut=folderOut(1:end-1);
                     end
+                case 'transparent'
+                    transparent=varargin{2};
             end
 
             varargin(1:2)=[];
@@ -51,6 +54,7 @@ function SaveMyFig(fig,name,varargin)
         folders{1}=[cd '\Plots\PNG\'];
         folders{2}=[cd '\Plots\PDF\'];
         folders{3}=[cd '\Plots\SVG\'];
+        % folders{4}=[cd '\Plots\EPS\'];
         
         for folder=folders
             if ~exist(char(folder), 'dir')
@@ -61,6 +65,7 @@ function SaveMyFig(fig,name,varargin)
         folders{1}=[folderOut '\'];
         folders{2}=[folderOut '\'];
         folders{3}=[folderOut '\'];
+        % folders{4}=[folderOut '\'];
     end
         
 
@@ -68,7 +73,9 @@ function SaveMyFig(fig,name,varargin)
     
     
     
-    
+    if transparent
+        set(fig,'color', 'none');
+    end
 
     for i=1:numel(formats)
         switch formats(i)

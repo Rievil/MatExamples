@@ -1,4 +1,9 @@
-function [f,y]=MyPower(y,freq)
+function [f,y]=MyPower(y,freq,range)
+    arguments
+        y (:,1) double;
+        freq (1,1) double;
+        range (1,1) double = 4.5;
+    end
     tuReal = "seconds";
     samples=numel(y);
     period=1/freq;
@@ -18,7 +23,7 @@ function [f,y]=MyPower(y,freq)
     end
 
     % Set Welch spectrum parameters.
-    L = fix(length(x)/4.5);
+    L = fix(length(x)/range);
     noverlap = fix(L*50/100);
     win = window(@hamming,L);
 

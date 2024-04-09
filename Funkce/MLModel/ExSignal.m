@@ -10,7 +10,7 @@ classdef ExSignal < handle
         Spectrum;
         Features;
         Frequency;
-        StartingTime=0;
+        TimeLim=[0,0];
         EmptyFeatures=false;
         Success=true;
         ErrMsg;
@@ -52,6 +52,8 @@ classdef ExSignal < handle
         Interpreter;
         FESett;
         FigSize=[20 80 600 450];
+        PowerSpectrumRange=4.5;
+        Lan='en';
     end
 
     properties (Hidden)
@@ -97,6 +99,8 @@ classdef ExSignal < handle
                     switch lower(varargin{1})
                         case 'specatt'
                             obj.SpecAtt=varargin{2};
+                        case 'language'
+                            obj.Lan=varargin{2};
                         case 'scale'
                             obj.SetScale(char(varargin{2}));
                         case 'trsh'
@@ -111,8 +115,8 @@ classdef ExSignal < handle
                             end
                         case 'fftsource'
                             obj.SetFFTSource(varargin{2});
-                        case 'startingtime'
-                            obj.StartingTime=varargin{2};
+                        case 'timelim'
+                            obj.TimeLim=[min(varargin{2}),max(varargin{2})];
                         case 'signal'
                             obj.HasSignal=varargin{2};
                         case 'hammer'
@@ -146,6 +150,9 @@ classdef ExSignal < handle
                         case 'freqwindow'
                             obj.FreqWindow=varargin{2};
                             obj.HasFreqWindow=true;
+                        case 'powerrange'
+                            obj.PowerSpectrumRange=varargin{2};
+
                         case 'freqpeaks'
                             if varargin{2}>0 && varargin{2}<50
                                 obj.FreqPeaks=varargin{2};
@@ -218,8 +225,11 @@ classdef ExSignal < handle
         end
 
         function time=get.Time(obj)
-            time=linspace(0,obj.Period*numel(obj.Signal),numel(obj.Signal))';
-            time=time+obj.StartingTime;
+            if sum(obj.TimeLim)==0
+                time=linspace(0,obj.Period*numel(obj.Signal),numel(obj.Signal))';
+            else
+                time=linspace(obj.TimeLim(1),obj.TimeLim(2),numel(obj.Signal))';
+            end
         end
 
 
@@ -356,6 +366,7 @@ classdef ExSignal < handle
                         if ~obj.SpecAxSet
                             obj.SpecAx=subplot(1,2,2);
                         end
+                    else
                         hold(obj.SpecAx,'on');
                         PlotSpectrumFeatures(obj,obj.SpecAx);
                     end
@@ -369,11 +380,12 @@ classdef ExSignal < handle
                     end
                     hold(obj.SpecAx,'on');
                     PlotSpectrumFeatures(obj,obj.SpecAx);
-                end
+                else
 
-                hold on;
-                ax=gca;
-                PlotSpectrumFeatures(obj,ax);
+                    hold on;
+                    ax=gca;
+                    PlotSpectrumFeatures(obj,ax);
+                end
 
             end
         end
@@ -392,28 +404,55 @@ classdef ExSignal < handle
     methods (Access=private)
 
         function PlotSignalFeatures(obj,ax)
-            if obj.Interpreter
-                sigLa='Signal';
-                negsigLa='Negative side of signal';
-                sigtrshLa='Signal above treashold';
-                trshLa=sprintf("Threshold $%0.0f$\\%% of noise",obj.NoiseMultiplier*100);
-                rtLa='RiseTime';
-                hitsLa='Hits';
-                maxaLa='Max. amplitude';
-                attLa='Attenuation curve';
-                xlabel(ax,'Time $t$ [s]','Interpreter','latex');
-                ylabel(ax,'Amplitude $A_{s}$ [V]','Interpreter','latex');
-            else
-                sigLa='Signal';
-                negsigLa='Negative side of signal';
-                sigtrshLa='Signal above treashold';
-                trshLa=sprintf("Threshold %0.0f%% of noise",obj.NoiseMultiplier*100);
-                rtLa='RiseTime';
-                hitsLa='Hits';
-                maxaLa='Max. amplitude';
-                attLa='Attenuation curve';
-                xlabel(ax,'Time \it t \rm [s]');
-                ylabel(ax,'Amplitude \it A_{s} \rm [V]');
+            switch obj.Lan
+                case 'en'
+                    if obj.Interpreter
+                        sigLa='Signal';
+                        negsigLa='Negative side of signal';
+                        sigtrshLa='Signal above treashold';
+                        trshLa=sprintf("Threshold $%0.0f$\\%% of noise",obj.NoiseMultiplier*100);
+                        rtLa='RiseTime';
+                        hitsLa='Hits';
+                        maxaLa='Max. amplitude';
+                        attLa='Attenuation curve';
+                        xlabel(ax,'Time $t$ [s]','Interpreter','latex');
+                        ylabel(ax,'Amplitude $A_{s}$ [V]','Interpreter','latex');
+                    else
+                        sigLa='Signal';
+                        negsigLa='Negative side of signal';
+                        sigtrshLa='Signal above treashold';
+                        trshLa=sprintf("Threshold %0.0f%% of noise",obj.NoiseMultiplier*100);
+                        rtLa='RiseTime';
+                        hitsLa='Hits';
+                        maxaLa='Max. amplitude';
+                        attLa='Attenuation curve';
+                        xlabel(ax,'Time \it t \rm [s]');
+                        ylabel(ax,'Amplitude \it A_{s} \rm [V]');
+                    end
+                case 'cz'
+                    if obj.Interpreter
+                        sigLa='Signal';
+                        negsigLa='Záporná strana signálu';
+                        sigtrshLa='Signál nad prahem';
+                        trshLa=sprintf("Prahová hodnota $%0.0f$\\%% jako násobek šumu",obj.NoiseMultiplier*100);
+                        rtLa='RiseTime';
+                        hitsLa='Překmity';
+                        maxaLa='Max. amplituda';
+                        attLa='Útlumová křivka';
+                        xlabel(ax,'Čas $t$ [s]','Interpreter','latex');
+                        ylabel(ax,'Amplituda $A_{s}$ [V]','Interpreter','latex');
+                    else
+                        sigLa='Signal';
+                        negsigLa='Záporná strana signálu';
+                        sigtrshLa='Signál nad prahem';
+                        trshLa=sprintf("Prahová hodnota %0.0f%% jako násobek šumu",obj.NoiseMultiplier*100);
+                        rtLa='RiseTime';
+                        hitsLa='Překmity';
+                        maxaLa='Max. amplituda';
+                        attLa='Útlumová křivka';
+                        xlabel(ax,'Čas \it t \rm [s]');
+                        ylabel(ax,'Amplituda \it A_{s} \rm [V]');
+                    end
             end
             time=obj.Time;
             
@@ -480,8 +519,8 @@ classdef ExSignal < handle
                 end
                 promLa='Prominence';
                 freqtrendLa='Frequency trend';
-                xlabel('Frequency $f$ [Hz]','Interpreter','latex');
-                ylabel('Amplitude $A_{f}$ [V]','Interpreter','latex');
+                xlabel(ax,'Frequency $f$ [Hz]','Interpreter','latex');
+                ylabel(ax,'Amplitude $A_{f}$ [V]','Interpreter','latex');
             else
                 specLa='Spectrum';
                 domfrLa='Main Dominant frequency';
@@ -491,8 +530,8 @@ classdef ExSignal < handle
                 end
                 promLa='Prominence';
                 freqtrendLa='Frequency trend';
-                xlabel('Frequency \it f \rm [Hz]');
-                ylabel('Amplitude \it A_{f} \rm [V]');
+                xlabel(ax,'Frequency \it f \rm [Hz]');
+                ylabel(ax,'Amplitude \it A_{f} \rm [V]');
             end
                 tf=table(obj.Frequency,obj.Spectrum,'VariableNames',{'f','y'});
             
@@ -1073,7 +1112,7 @@ classdef ExSignal < handle
             end
     
             % Set Welch spectrum parameters.
-            L = fix(length(x)/4.5);
+            L = fix(length(x)/obj.PowerSpectrumRange);
             noverlap = fix(L*50/100);
             win = window(@hamming,L);
     

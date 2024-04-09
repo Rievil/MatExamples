@@ -15,8 +15,8 @@ classdef ShearTensilePlot < handle
         FigSet=false;
         CloseCallBackSet=false;
         Red;
-        XLim=[inf,0];
-        YLim=[inf,0];
+        XLim=[0,0];
+        YLim=[0,0];
         Alpha;
         Beta;
         MaxXLim=0;
@@ -75,6 +75,7 @@ classdef ShearTensilePlot < handle
         
         function SetLine(obj)
             if ~obj.LineSet
+                SetLim(obj);
                 [x,y]=GetLine(obj);
                 obj.YLine=y;
                 obj.XLine=x;
@@ -143,27 +144,27 @@ classdef ShearTensilePlot < handle
             for i=1:obj.Count
                 [xlim,ylim]=GetLim(obj.DataSets(i));
                 
-                if obj.XLim(1)>xlim(1)
+                if xlim(1)<obj.XLim(1)
                     obj.XLim(1)=xlim(1);
                 end
                 
-                if obj.XLim(2)<xlim(2)
+                if xlim(2)>obj.XLim(2)
                     obj.XLim(2)=xlim(2);
                 end
                 
-                if obj.YLim(1)>ylim(1)
+                if ylim(1)<obj.YLim(1)
                     obj.YLim(1)=ylim(1);
                 end
                 
-                if obj.YLim(2)<ylim(2)
+                if ylim(2)>obj.YLim(2)
                     obj.YLim(2)=ylim(2);
                 end
             end
         end
         
         function Run(obj)
-            obj.XLim=[inf,0];
-            obj.YLim=[inf,0];
+            obj.XLim=[1000,0];
+            obj.YLim=[1000,0];
             SetLim(obj);
             SetLine(obj);
             for i=1:obj.Count
@@ -173,8 +174,8 @@ classdef ShearTensilePlot < handle
 
         function GenerateLine(obj)
             if obj.Count>0
-                obj.XLim=[inf,0];
-                obj.YLim=[inf,0];
+                % obj.XLim=[inf,0];
+                % obj.YLim=[inf,0];
                 SetLim(obj);
                 SetLine(obj);
             end
@@ -184,7 +185,7 @@ classdef ShearTensilePlot < handle
             if obj.AxSet==false
                 SetFig(obj);
             end
-
+            Run(obj);
             colset=false;
             seltype=false;
 
@@ -272,7 +273,7 @@ classdef ShearTensilePlot < handle
             set(obj.Ax,'YScale','log');
             
             DrawAnnotation(obj);
-            
+            SetLim(obj);
             xlim(obj.Ax,obj.XLim);
             ylim(obj.Ax,obj.YLim);
             

@@ -1,8 +1,9 @@
 function ChangeMinus(fig,exps)
+    set(groot,'defaultAxesTickLabelInterpreter','latex'); 
     fch=fig.Children';
     ax=fig.CurrentAxes;
     minusOld='-';
-    minusTarget='−';
+    minusTarget='-';
 	
     if strcmp(class(fch),'matlab.graphics.layout.TiledChartLayout')
         fch=fch.Children';
@@ -16,7 +17,10 @@ function ChangeMinus(fig,exps)
                 for n=["X","Y","Z"]
                     i=i+1;
                     vals=ch.(sprintf("%sTick",n));
-                    if exps(i)~=0
+                    axn=ch.(sprintf("%sAxis",n));
+
+                    exponent=axn.Exponent;
+                    if exponent~=0
                         vals=vals/power(10,exps(i));
                     end                    
 %                     floor(min(vals));

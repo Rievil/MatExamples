@@ -8,7 +8,9 @@ function [hit]=ReadZedoSignal(folder,file)
             strBlock2=join(string(strBlock{1,1}));
             strArr=split(strBlock2,'#');
 
-            term={' Number-of-samples: ',' PSD-Dominant-Frequency [Hz]: ',' Sampling-Rate[MHz]: ',' Raw-Sample-File: ',' Channel: ',' Hit-ID: ',' Time-Start-Relative[sec]: '};
+            term={' Number-of-samples: ',' PSD-Dominant-Frequency [Hz]: ',...
+                ' Sampling-Rate[MHz]: ',' Raw-Sample-File: ',' Channel: ',...
+                ' Hit-ID: ',' Time-Start-Relative[sec]: '};
             hit=struct();
             hit.SignalExist=false;
             hit.Description=strArr;
@@ -37,7 +39,7 @@ function [hit]=ReadZedoSignal(folder,file)
             %Vzorkovací frekvence
             Index = find(contains(strArr,term{3}));
             tmp=double(strrep(strArr(Index),term{3},''));
-            hit.SampleFreq=power(tmp(1),7);
+            hit.SampleFreq=tmp(1)*1e+6;
 
             %Název souboru Bin
             Index = find(contains(strArr,term{4}));

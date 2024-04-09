@@ -130,7 +130,7 @@ classdef IERead < handle
             
             signalcolCanmes=["Signal","Signals","Item","Items"];
             colNames=string(obj.SignalTable.Properties.VariableNames);
-            A=contains(colNames,signalcolCanmes);
+            A=find(matches(colNames,signalcolCanmes,'IgnoreCase',false));
             % typer=
             
 
@@ -149,17 +149,31 @@ classdef IERead < handle
             for ii=1:obj.SigCount
                 switch obj.ReadType
                     case 1
-                        signal=obj.SignalTable.Signals{ii};
+                        signal=obj.SignalTable.(colNames(A)){ii};
+
+
                         f(ii) = parfeval(@IERead.ReadFunction,1,signal);
                     case 2
                         file=sprintf("%s\\%s",obj.FileTable.folder(ii),obj.FileTable.name(ii));
                         f(ii) = parfeval(@IERead.ReadFunction2,3,file,obj.SigCol,obj.TimeCol);
                     case 3
-                        signal=obj.SignalTable.Signals{ii};
+                        signal=obj.SignalTable.(colNames(A)){ii};
+                        colnames=signal.Properties.VariableNames;
+                        colnames2=string(colnames);
+                        % idT=find(intersect(colnames,obj.TimeCol));
+                        if isnumeric(obj.SigCol)
+                            idS=obj.SigCol;
+                        else
+                            idS=colnames2==obj.SigCol;
+                        end
+                        signal.Properties.VariableNames{idS}='Signal';
                         f(ii) = parfeval(@IERead.ReadFunction3,1,signal);
                     case 4
                         signal=obj.SignalTable.(colNames(A)){ii};
                         f(ii) = parfeval(@IERead.ReadFunction4,1,signal,obj.SigCol,obj.TimeCol);
+                    case 5
+                        signal=obj.SignalTable.(colNames(A)){ii};
+                        f(ii) = parfeval(@IERead.ReadFunction5,1,signal,obj.SamplingFrequency);
                 end
             end
             updateWaitbar = @(~) waitbar(mean({f.State} == "finished"),h);
@@ -186,6 +200,7 @@ classdef IERead < handle
             y=signal.Signal(:);
             y2=signal.Hammer(:);
             x=signal.Time(:);
+
 
             freq=1/(x(2)-x(1));
 
@@ -224,6 +239,10 @@ classdef IERead < handle
             y=signal.Signal(:);
 
             x=signal.Time(:);
+            
+            if strcmp(class(x),'duration')
+                x=seconds(x);
+            end
 
             freq=1/(x(2)-x(1));
 
@@ -246,6 +265,27 @@ classdef IERead < handle
 
             obj=ExSignal(y,freq,'startmethod','fix','trsh',0.002,'freqpeaks',1,'fftsource','full',...
                  'DeadTimeSeparator',0.1,'spectrumtype','power','signalatt',false);
+            T=obj.Features;
+
+            result={T,obj.Success};
+            delete(obj);
+            
+            clear TS obj;
+        end
+
+        function result=ReadFunction5(signal,fs)
+            y=signal;
+            freq=fs;
+            period=1/freq;
+            duration=numel(y)*period;
+            x=linspace(0,duration,numel(y));
+            % x=seconds(signal.(timecol)(:));
+
+            
+
+            obj=ExSignal(y,freq,'startmethod','fix','trsh',0.002,'freqpeaks',1,'fftsource','full',...
+                 'DeadTimeSeparator',0.1,'spectrumtype','power','signalatt',false,...
+                 'powerrange',10);
             T=obj.Features;
 
             result={T,obj.Success};

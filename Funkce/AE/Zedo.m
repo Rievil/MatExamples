@@ -241,6 +241,7 @@ classdef Zedo < AcousticEmission
                                     
                                     CardSignals=[table(ID,'VariableNames',{'ID'}), CardSignals];
                                     Records(iCard).Signals=CardSignals;
+
                                 end
 
                                 Records(iCard).ConDetector=table;
@@ -248,7 +249,11 @@ classdef Zedo < AcousticEmission
                                 for s=1:length(DecNum) %n hitdetector
 
                                     DetectorName=[SignalPatterns{2} num2str(DecNum(s))];
-                                    
+                                    if numel(sigperdec)==0
+                                        SigDetectorName="signal";
+                                    else
+                                        SigDetectorName=DetectorName;
+                                    end
                                     Records(iCard).Detector(s).Name=DetectorName;
                                     Records(iCard).Detector(s).Data=readtable([char(DetectorsFiles.folder(s)) '\' char(DetectorsFiles.file(s))],...
                                         'ReadVariableNames',true,'HeaderLines', 2);
@@ -258,15 +263,15 @@ classdef Zedo < AcousticEmission
                                     if sum(BoolSignals)>0
                                         if obj.MustReadSignals==true
                                             
-                                            Idx=find(contains(Records(iCard).Signals.name,DetectorName));
+                                            Idx=find(contains(Records(iCard).Signals.name,SigDetectorName));
                                             if isempty(Idx)
 
                                                 %there is only one
                                                 %hitdet used, so select
                                                 %all signals
-                                                Idx=1:1:size(Records(iCard).Signals,1);
-                                            else
                                                 signalsread=false;
+                                            else
+                                                Idx=1:1:size(Records(iCard).Signals,1);
                                             end
                                             DetSignals=Records(iCard).Signals(Idx,:);
 
