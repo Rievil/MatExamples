@@ -366,7 +366,6 @@ classdef ExSignal < handle
                         if ~obj.SpecAxSet
                             obj.SpecAx=subplot(1,2,2);
                         end
-                    else
                         hold(obj.SpecAx,'on');
                         PlotSpectrumFeatures(obj,obj.SpecAx);
                     end
