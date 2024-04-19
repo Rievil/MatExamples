@@ -41,34 +41,31 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
             org2=org;
             while numel(org2)>0
                 for k=1:numel(valcols)
-                    
-                    switch org2{1}
+                    skip=false;
+                    switch lower(org2{1})
                         case 'none'
                             skip=true;
                         case 'mean'
                             name='Mean';
                             arr=mean(B{:,valcols(k)});
-                            skip=false;
                         case 'std'
                             name='Std';
                             arr=std(B{:,valcols(k)});
-                            skip=false;
                         case 'modus'
                             name='Modus';
                             arr = mode(B{:,valcols(k)});
-                            skip=false;
                         case 'median'
                             name='Median';
                             arr = median(B{:,valcols(k)});
-                            skip=false;
                         case 'max'
                             name='Max';
                             arr = max(B{:,valcols(k)});
-                            skip=false;
                         case 'min'
                             name='Min';
                             arr = min(B{:,valcols(k)});
-                            skip=false;
+                        case 'count'
+                            name='Count';
+                            arr = numel(B{:,valcols(k)});
                         otherwise
                             warning("You have entered wrong argument %s\n",org2{1});
                             skip=true;
