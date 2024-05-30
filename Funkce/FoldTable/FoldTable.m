@@ -2,13 +2,34 @@ function sT=FoldTable(inT,namcol,valcols,varargin)
     org=varargin;
 %     unqVal=cell;
     com=[];
+
     varnames=inT.Properties.VariableNames;
+    var_nums=1:1:numel(varnames);
+
+    varT=table(var_nums,varnames,'VariableNames',["nums","str"]);
+    if ~isnumeric(namcol)
+        namcol_tmp=zeros(numel(namcol),1);
+        for i=1:numel(namcol)
+            namcol_tmp(i,1)=varT.nums(varT.str==namcol(i));
+        end
+        namcol=namcol_tmp;
+    end
+
+    if ~isnumeric(valcols)
+        valcols_tmp=zeros(numel(valcols),1);
+        for i=1:numel(valcols)
+            valcols_tmp(i,1)=varT.nums(varT.str==valcols(i));
+        end
+        valcols=valcols_tmp;
+    end
+
     for i=1:numel(namcol)
         coldata=inT{:,namcol(i)};
 
         switch class(coldata)
             case 'cell'
                 coldata=string(coldata);
+                inT.(varnames{namcol(i)})=string(inT.(varnames{namcol(i)}));
             otherwise
         end
         unqVal{i}=unique(coldata);
